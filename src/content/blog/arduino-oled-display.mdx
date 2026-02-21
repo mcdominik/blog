@@ -1,0 +1,46 @@
+---
+title: "Arduino with OLED Display"
+description: "Run an OLED display with Arduino: text, shapes, animations and bitmap graphics."
+pubDate: "May 22 2025"
+published: true
+tags: ["electronics", "tutorial"]
+---
+
+https://youtu.be/___p9JYbTc0
+
+## Overview
+
+In this tutorial, I demonstrate how to connect and program one of the most popular components in the maker community: the OLED display. Whether you are looking to display sensor data, create custom animations, in general - add a user interface to your Arduino project, this guide covers all the basics.
+
+In the accompanying video, I walk you through:
+
+- Hardware Setup: Understanding I2C vs SPI and 3.3V vs 5V logic.
+- Driver Distinctions: The difference between SSD1306 and SH1106 drivers.
+- Basic Drawing: Displaying text and geometric shapes.
+- Motion: Implementing scrolling text.
+- Graphics: Converting and displaying custom images (bitmaps).
+
+## Why OLED?
+
+[OLED displays](https://en.wikipedia.org/wiki/OLED) replaced [LCDs](https://en.wikipedia.org/wiki/Liquid-crystal_display) in many projects because they are more energy-efficient, have better contrast and are more compact. They are also more durable and have a longer lifespan than LCDs. They are unarguably better.
+
+## **Quick start**
+
+For this project, I am using an [Arduino Nano 33 BLE] Sense(https://docs.arduino.cc/hardware/nano-33-ble-sense/), but the code and wiring are compatible with the classic Arduino Uno and Nano as well.
+
+Identifying Your Display
+Before wiring, check your pins to identify the communication protocol:
+
+- I2C (Used in this tutorial): Pins labeled SCL and SDA.
+- SPI: Pins labeled DC, CS, etc.
+
+I2C Wiring Guide
+
+- VCC → Connect to 3.3V (Most displays tolerate 5V, but check your specs).
+- GND → Connect to Ground.
+- SCL (Serial Clock) → Connect to A5.
+- SDA (Serial Data) → Connect to A4.
+
+To get the display running, you need to install two specific libraries: [Adafruit GFX Library](https://github.com/adafruit/Adafruit-GFX-Library) and [Adafruit SSD1306](https://github.com/adafruit/Adafruit_SSD1306) and load on of the available [code snippets](https://github.com/mcdominik/source/tree/main/arduino/oled_tutorial)
+
+More details and explanations in the video!

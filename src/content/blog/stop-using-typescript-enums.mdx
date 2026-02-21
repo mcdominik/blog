@@ -1,0 +1,116 @@
+---
+title: "TypeScript enums. Why you should stop using them?"
+description: "TypeScript enums vs literal types vs as const object"
+pubDate: "Feb 21 2026"
+published: true
+tags: ["tips", "TypeScript"]
+---
+
+## What are enums and why do we use them?
+
+How to recognize an inexperienced programmer:
+
+```ts
+// typo-prone code
+if (status !== "active") {
+  await sendActivationEmail();
+}
+```
+
+We know this is a bad idea. A small typo is enough, and our active users will get flooded with activation emails. Not very professional.
+
+```ts
+// oops!
+if (status !== "activr") {
+  await sendActivationEmail();
+}
+```
+
+And here comes the enum, saving the day!
+
+```ts
+enum Status {
+  Active = "active",
+  Disabled = "disabled",
+}
+
+if (status !== Status.Active) {
+  await sendActivationEmail();
+}
+```
+
+Looks nice. But it introduces unnecessary complexity.
+
+- The "enum footprint" follows us everywhere — we have to import it in every file where we operate on the variable.
+- After transpilation (TypeScript → JavaScript), it generates additional JavaScript (extra bundle size).
+
+```js
+// this is how enums look in JavaScript
+var Status;
+(function (Status) {
+  Status["Active"] = "active";
+  Status["Disabled"] = "disabled";
+})(Status || (Status = {}));
+```
+
+- It breaks DRY — for small enums this might sound like a joke, but verbose ones can get truly ugly:
+
+```ts
+FOREIGN_LINKED_BANK_ACCOUNT_PROFILE = "FOREIGN_LINKED_BANK_ACCOUNT_PROFILE";
+PENDING_THIRD_PARTY_PAYMENT_VERIFICATION =
+  "PENDING_THIRD_PARTY_PAYMENT_VERIFICATION";
+TWO_FACTOR_AUTHENTICATION_BYPASS_ATTEMPT =
+  "TWO_FACTOR_AUTHENTICATION_BYPASS_ATTEMPT";
+```
+
+- It reduces readability by making simple comparisons longer than it should:
+
+```ts
+if (type === InternalWebhookTypes.FOREIGN_LINKED_BANK_ACCOUNT_PROFILE)
+```
+
+Alternatives?
+
+## Literal types!
+
+```ts
+type Status = "active" | "disabled";
+
+if (status !== "active") {
+  await sendActivationEmail();
+}
+```
+
+Clear and readable, with no JavaScript overhead. The `Status` type does not exist in the JavaScript value space, so we don't have to import anything. It does type-checking magic silently in the background. In most cases, this is exactly what we want: clean, quiet, and elegant.
+
+Sometimes, however, you may want access to these values at runtime. For example, if you want to render all options in a UI:
+
+```ts
+Object.values(Status).map(d => <option value={d}>{d}</option>)
+```
+
+This is not possible because `Status` does not exist at runtime. Back to enums? Actually, there is a third pattern we can use instead. It combines the simplicity of literal types with runtime availability. The type is derived from the value automatically, so they can never drift apart.
+
+```ts
+export const Status = ["active", "disabled"] as const;
+export type StatusType = (typeof Status)[number];
+
+interface User {
+  status: StatusType;
+}
+
+// still works!
+if (status !== "active") {
+  await sendActivationEmail();
+}
+```
+
+## Rule of thumb
+
+- **Literal type** → you only need type checking, no runtime iteration. The most common case.
+- **`as const` array/object** → you need runtime access to all values (validation, UI lists, etc.).
+- **Enum** → mostly when working with external code that already uses them. Generally avoid otherwise.
+
+## TL;DR
+
+Enums aren't inherently bad, but replacing them with literal types or the `as const` array/object pattern provides the same benefits with greater elegance.

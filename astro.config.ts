@@ -51,7 +51,9 @@ export default defineConfig({
       embeds: [ExcalidrawEmbed, YoutubeEmbed, LinkCardEmbed],
     }),
     mdx(),
-    sitemap(),
+    sitemap({
+      filter: (page) => !page.includes("/tags/") && !page.includes("/pages/"),
+    }),
     tailwind(),
     svelte(),
   ],
