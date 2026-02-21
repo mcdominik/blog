@@ -52,7 +52,7 @@ export const SOCIAL_LINKS: {
   SHOW_RSS?: boolean;
 } = {
   SHOW_RSS: true,
-  YOUTUBE_URL: "https://www.youtube.com/@mixedmatrixarts",
+  YOUTUBE_URL: "https://www.youtube.com/@mixed-matrix-arts",
   GITHUB_URL: "https://github.com/mcdominik",
   EMAIL: "ddominik.mackiewicz@gmail.com",
 };
