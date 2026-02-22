@@ -19,3 +19,9 @@ import { Content } from "$content/info/about.mdx";
 
   <Footer />
 </BaseLayout>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.posthog?.capture('about_page_viewed');
+  });
+</script>

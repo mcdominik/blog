@@ -78,6 +78,7 @@ const { class: className, ...props } = Astro.props;
       darkMode = !darkMode;
       localStorage.setItem("darkMode", JSON.stringify(darkMode));
       setTheme(darkMode);
+      window.posthog?.capture('theme_toggled', { theme: darkMode ? 'dark' : 'light' });
     }
 
     // Initialize theme on page load

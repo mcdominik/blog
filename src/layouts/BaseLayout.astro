@@ -1,5 +1,6 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
+import PostHog from "../components/posthog.astro";
 const { title, description, image } = Astro.props;
 ---
 
@@ -7,6 +8,7 @@ const { title, description, image } = Astro.props;
 <html lang="en" class="h-full antialiased">
   <head>
     <BaseHead title={title} description={description} image={image} />
+    <PostHog />
 
     <script is:inline>
       let dark = false;

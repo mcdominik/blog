@@ -37,6 +37,11 @@
 
       await navigator.clipboard.writeText(text);
 
+      window.posthog?.capture('code_copied', {
+        code_length: text.length,
+        page_path: window.location.pathname,
+      });
+
       let oldLabel = button.innerText;
       let oldClassName = button.className;
       button.className =

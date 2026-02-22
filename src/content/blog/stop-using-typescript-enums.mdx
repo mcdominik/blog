@@ -42,7 +42,7 @@ if (status !== Status.Active) {
 Looks nice. But it introduces unnecessary complexity.
 
 - The "enum footprint" follows us everywhere — we have to import it in every file where we operate on the variable.
-- After transpilation (TypeScript → JavaScript), it generates additional JavaScript (extra bundle size).
+- After transpilation (TypeScript → JavaScript), it generates additional JavaScript (extra bundle size):
 
 ```js
 // this is how enums look in JavaScript
@@ -83,13 +83,13 @@ if (status !== "active") {
 
 Clear and readable, with no JavaScript overhead. The `Status` type does not exist in the JavaScript value space, so we don't have to import anything. It does type-checking magic silently in the background. In most cases, this is exactly what we want: clean, quiet, and elegant.
 
-Sometimes, however, you may want access to these values at runtime. For example, if you want to render all options in a UI:
+Sometimes, however, you may want access to these values at runtime. For example, if you want to render all options in a UI.
 
 ```ts
 Object.values(Status).map(d => <option value={d}>{d}</option>)
 ```
 
-This is not possible because `Status` does not exist at runtime. Back to enums? Actually, there is a third pattern we can use instead. It combines the simplicity of literal types with runtime availability. The type is derived from the value automatically, so they can never drift apart.
+This is not possible because `Status` does not exist at runtime. Back to enums? Actually, there is a third pattern we can use instead. It combines the simplicity of literal types with runtime availability. The type is derived from the value automatically, so they can never drift apart:
 
 ```ts
 export const Status = ["active", "disabled"] as const;

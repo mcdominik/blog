@@ -61,6 +61,16 @@ if (replacedHero && !images[replacedHero])
       <h1 class="mt-4">{post.data.title}</h1>
       <Content />
 
+      <script is:inline define:vars={{ postTitle: post.data.title, postSlug: post.id, postTags: post.data.tags ?? [] }}>
+        document.addEventListener('DOMContentLoaded', function () {
+          window.posthog?.capture('blog_post_viewed', {
+            post_title: postTitle,
+            post_slug: postSlug,
+            post_tags: postTags,
+          });
+        });
+      </script>
+
       <BlueskyLikes
         disableLikes={post.data.disableLikes}
         disableComments={post.data.disableComments}

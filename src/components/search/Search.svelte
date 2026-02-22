@@ -6,6 +6,7 @@
   class="search-button"
   onclick={() => {
     $showSearch = true;
+    window.posthog?.capture('search_opened');
   }}
 >
   <div class="sr-only">search</div>

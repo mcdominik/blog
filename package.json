@@ -26,6 +26,7 @@
     "astro-og-canvas": "^0.7.0",
     "cheerio": "^1.0.0",
     "lite-youtube-embed": "^0.3.3",
+    "posthog-js": "^1.352.0",
     "rehype-mathjax": "^7.1.0",
     "remark-math": "^6.0.0",
     "svelte": "^5.1.1",
