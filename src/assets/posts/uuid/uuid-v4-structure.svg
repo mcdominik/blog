@@ -1,0 +1,25 @@
+<svg width="700" height="260" viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#121212" rx="12"/>
+
+  <rect x="20" y="80" width="660" height="90" rx="8" fill="#242424" stroke="#333333" stroke-width="1"/>
+
+  <text x="50%" y="50" text-anchor="middle" font-family="Segoe UI, Roboto, Helvetica, sans-serif" font-size="22" font-weight="600" fill="#ffffff">
+    UUID v4 Structure
+  </text>
+
+  <text x="50%" y="125" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="18" fill="#e0e0e0" letter-spacing="1.2">
+    3f1c2a7e-8b91-<tspan fill="#2ecc71" font-weight="bold" font-size="20">4</tspan>d6f-<tspan fill="#e67e22" font-weight="bold" font-size="20">a</tspan>2c9-5e8b7f1d4c3a
+  </text>
+  
+  <text x="260" y="165" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2ecc71" opacity="0.9" letter-spacing="0.5">
+    ↑ Version 4 indicator
+  </text>
+  
+  <text x="440" y="165" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22" opacity="0.9" letter-spacing="0.5">
+    ↑ Variant indicator
+  </text>
+  
+  <text x="50%" y="200" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#aaaaaa" letter-spacing="0.5">
+    All other hex digits are random
+  </text>
+</svg>

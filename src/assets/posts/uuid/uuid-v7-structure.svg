@@ -1,0 +1,29 @@
+<svg width="700" height="260" viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#121212" rx="12"/>
+
+  <rect x="20" y="80" width="660" height="90" rx="8" fill="#242424" stroke="#333333" stroke-width="1"/>
+
+  <text x="50%" y="50" text-anchor="middle" font-family="Segoe UI, Roboto, Helvetica, sans-serif" font-size="22" font-weight="600" fill="#ffffff">
+    UUID v7 Structure
+  </text>
+
+  <text x="50%" y="125" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="18" fill="#e0e0e0" letter-spacing="1.2">
+    <tspan fill="#3498db" font-weight="bold" font-size="20">018f9c4b-6d32</tspan>-<tspan fill="#2ecc71" font-weight="bold" font-size="20">7</tspan>a1e-<tspan fill="#e67e22" font-weight="bold" font-size="20">b</tspan>5f4-9c2d8e7a6b10
+  </text>
+  
+  <text x="180" y="165" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3498db" opacity="0.9" letter-spacing="0.5">
+    ↑ Time-oriented
+  </text>
+  
+  <text x="370" y="165" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2ecc71" opacity="0.9" letter-spacing="0.5">
+    ↑ Version 7 indicator
+  </text>
+  
+  <text x="500" y="165" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#e67e22" opacity="0.9" letter-spacing="0.5">
+    ↑ Variant indicator
+  </text>
+  
+  <text x="50%" y="200" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#aaaaaa" letter-spacing="0.5">
+    All other hex digits are random
+  </text>
+</svg>
