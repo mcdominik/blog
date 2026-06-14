@@ -1,13 +1,13 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
 import PostHog from "../components/posthog.astro";
-const { title, description, image } = Astro.props;
+const { title, description, image, pubDate, updatedDate, type } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en" class="h-full antialiased">
   <head>
-    <BaseHead title={title} description={description} image={image} />
+    <BaseHead title={title} description={description} image={image} pubDate={pubDate} updatedDate={updatedDate} type={type} />
     <PostHog />
 
     <script is:inline>

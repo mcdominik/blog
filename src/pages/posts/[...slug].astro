@@ -33,7 +33,7 @@ if (replacedHero && !images[replacedHero])
   );
 ---
 
-<BaseLayout {...post.data} image={post.id + ".png"}>
+<BaseLayout {...post.data} image={post.id + ".png"} type="article" pubDate={post.data.pubDate} updatedDate={post.data.updatedDate}>
   <Header active="blog" />
 
   <main class="max-w-2xl lg:max-w-3xl mx-auto my-0 h-full p-4">

@@ -53,6 +53,14 @@ export default defineConfig({
     mdx(),
     sitemap({
       filter: (page) => !page.includes("/tags/") && !page.includes("/pages/"),
+      serialize(item) {
+        // Set lastmod to current date for all pages as a baseline
+        // The sitemap plugin doesn't have access to content collection data,
+        // so we use the build date. For more precise dates, content would
+        // need to provide them via a different mechanism.
+        item.lastmod = new Date().toISOString();
+        return item;
+      },
     }),
     tailwind(),
     svelte(),
