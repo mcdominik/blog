@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" width="100%" height="100%">
+  <!-- Card Background -->
+  <rect x="10" y="10" width="780" height="200" rx="12" fill="#1E1E2E" stroke="#302D41" stroke-width="2"/>
+  
+  <!-- Title -->
+  <text x="30" y="45" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="bold" fill="#CDD6F4">IEEE 754 Single-Precision Floating-Point (32-bit)</text>
+  
+  <!-- Box: Sign Bit (1 bit) -->
+  <rect x="30" y="70" width="60" height="80" rx="6" fill="#F38BA8" stroke="#E06C75" stroke-width="1.5"/>
+  <text x="60" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold" fill="#11111B" text-anchor="middle">Sign</text>
+  <text x="60" y="132" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#11111B" text-anchor="middle">1 bit (31)</text>
+
+  <!-- Box: Exponent (8 bits) -->
+  <rect x="98" y="70" width="220" height="80" rx="6" fill="#89B4FA" stroke="#61AFEF" stroke-width="1.5"/>
+  <text x="208" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold" fill="#11111B" text-anchor="middle">Exponent</text>
+  <text x="208" y="132" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#11111B" text-anchor="middle">8-bit (30-23)</text>
+
+  <!-- Box: Fraction / Mantissa (23 bits) -->
+  <rect x="326" y="70" width="444" height="80" rx="6" fill="#A6E3A1" stroke="#98C379" stroke-width="1.5"/>
+  <text x="548" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold" fill="#11111B" text-anchor="middle">Fraction / Mantissa</text>
+  <text x="548" y="132" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#11111B" text-anchor="middle">23-bit (22-0)</text>
+
+  <!-- Formula or Info at bottom -->
+  <text x="30" y="185" font-family="monospace" font-size="14" fill="#A6ADC8">Value = (-1)ˢ × (1 + Fraction) × 2ᴱ⁻¹²⁷</text>
+</svg>
