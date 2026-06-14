@@ -43,6 +43,11 @@ const jsonLd =
           : pubDate
             ? { dateModified: pubDate.toISOString() }
             : {}),
+        author: {
+          "@type": "Person",
+          name: "Dominik Mackiewicz",
+          url: SITE,
+        },
         mainEntityOfPage: {
           "@type": "WebPage",
           "@id": canonicalURL.href,
