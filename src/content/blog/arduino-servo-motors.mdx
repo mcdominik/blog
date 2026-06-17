@@ -1,0 +1,147 @@
+---
+title: "Arduino with Servo Motors"
+description: "Run any servo motor with Arduino: safe external powering, sweep scripts, and potentiometer knob control."
+pubDate: "Jun 17 2026"
+published: true
+tags: ["electronics", "tutorial"]
+---
+
+https://youtu.be/1mDnaiEytAI
+
+## Overview
+
+In this tutorial, I demonstrate how to connect and program literally any servo motor using an Arduino. Whether you are using a tiny, popular SG90 or a powerful motor with 30 kg of torque, this guide covers both. We will look at safe powering methods, wiring configurations, how servos work under the hood using Pulse Width Modulation (PWM), and two essential code scripts: a basic sweep script and an analog potentiometer knob control.
+
+In the accompanying video, I walk you through:
+
+- **Safe Powering**: Why direct connection is risky and how to wire an external power supply.
+- **Wire Color Codes**: SG90 vs. other manufacturers.
+- **PWM Theory**: Understanding pulse width modulation.
+- **Sweep Script**: Moving the servo up and down.
+- **Knob Control**: Mapping a potentiometer dial to servo angles.
+- **Capacitor Trick**: Reducing noise and stabilizing power.
+
+## Safe Powering: Direct vs. External Power
+
+The most important topic when working with motors is power:
+
+> ⚠️
+> I always recommend using an **external power supply** for your servos. Motors (especially in stall/load mode) can draw a very large amount of current.
+>
+> Even tiny servos like the SG90 can draw **0.5A to 0.8A** in stall mode. If you power them directly from the Arduino board, this high current can cause voltage drops, causing the Arduino to twitch and suddenly reset. It can even restart your computer's USB port or laptop, especially with older USB 2.0 ports that are limited to 0.5A.
+
+For larger servos, or to make your setup safe and stable, connect the servo's power directly to an external power supply (typically 5V or 6V depending on the motor specs) and only share the ground (GND) pin with the Arduino.
+
+### Wire Color Codes
+
+Different manufacturers use different wire color schemes:
+
+| Connection | SG90 (typical) | Readytosky (typical) |
+| :--- | :--- | :--- |
+| **Power (VCC)** | Red | Red |
+| **Ground (GND)** | Brown | Black |
+| **Signal (PWM)** | Orange | White |
+
+*Always double-check your servo's datasheet before connecting.*
+
+---
+
+## Wiring Guide
+
+### 1. The Risky Direct Method (Prototyping Only)
+*Use at your own risk for a single small, unloaded SG90:*
+- **VCC** → Arduino **5V**
+- **GND** → Arduino **GND**
+- **Signal** → Arduino **D9** (or any digital pin)
+
+### 2. The Safe Method (Recommended)
+*Connects the servo to an external power supply:*
+- **Servo Power** → External Power **5V**
+- **Servo GND** → External Power **GND** and Arduino **GND** (Common Ground)
+- **Servo Signal** → Arduino **D9**
+
+> 💡
+> To stabilize the power supply and reduce electrical noise that causes twitching, place a capacitor (e.g. 100µF or larger) between the servo's ground and power rails.
+
+---
+
+## How it works: Pulse Width Modulation (PWM)
+
+You might think that the Arduino sends a command like "go to 90 degrees" over the wire. It doesn't. It sends a heartbeat signal called **PWM (Pulse Width Modulation)**.
+
+Microcontrollers can only output digital signals: either high (3.3V/5V) or low (0V). PWM is a technique that fakes an analog result by switching the switch on and off extremely fast. In the servo domain, the width of the pulse tells the servo's internal gears and controller where to point.
+
+Fortunately, the Arduino `Servo` library hides all these timing details.
+
+---
+
+## Code Snippets
+
+### 1. Sweep Script
+This script sweeps the servo 180 degrees up and down continuously.
+
+```cpp
+#include <Servo.h>
+
+Servo myServo;  // Create a servo object
+int pos = 0;    // Variable to store the servo position
+
+void setup() {
+  myServo.attach(9);  // Attaches the servo on pin 9
+}
+
+void loop() {
+  // Sweep from 0 to 180 degrees
+  for (pos = 0; pos <= 180; pos += 1) {
+    myServo.write(pos);              // Update servo position
+    delay(15);                       // Give the gears time to catch up
+  }
+  
+  // Sweep back from 180 to 0 degrees
+  for (pos = 180; pos >= 0; pos -= 1) {
+    myServo.write(pos);              // Update servo position
+    delay(15);                       // Give the gears time to catch up
+  }
+}
+```
+
+> 📝
+> The `delay(15);` is crucial. The Arduino processor is extremely fast, executing millions of instructions per second. The delay gives the physical gears time to catch up to the code. Without it, the Arduino would command the sweep in a fraction of a millisecond, and the servo would just buzz or jitter.
+
+> 📢
+> The `Servo` library uses default pulse width limits (in microseconds). For some servos, these default values may limit the range of motion. In such cases, you can manually adjust them when attaching the pin:
+> `myServo.attach(pin, minMicros, maxMicros);`
+
+### 2. Knob Control Script
+This script allows you to control the servo position manually using a potentiometer.
+
+#### Potentiometer Wiring:
+- **Left Leg** → Common Ground
+- **Middle Leg (Wiper)** → Arduino **A0** (Analog Pin)
+- **Right Leg** → Arduino **3.3V** *(Note: Connect to 3.3V, not 5V, to keep the analog pin reading safe and aligned with standard reference voltages).*
+
+```cpp
+#include <Servo.h>
+
+Servo myServo;  // Create a servo object
+
+const int potPin = A0;  // Analog pin connected to potentiometer
+int val;                // Variable to read the value
+
+void setup() {
+  myServo.attach(9);    // Attaches the servo on pin 9
+}
+
+void loop() {
+  val = analogRead(potPin);            // Read potentiometer (0 to 1023)
+  val = map(val, 0, 1023, 0, 180);     // Map the 10-bit analog range to angles (0 to 180)
+  myServo.write(val);                  // Write the position to the servo
+  delay(15);                           // Delay to let the servo move
+}
+```
+
+The `map()` function is extremely handy here: it converts the granularity of the Arduino's 10-bit analog pin (2^10 = 1024 values) to a standard 0 to 180-degree angle.
+
+---
+
+More details and hardware demonstrations in the video!
