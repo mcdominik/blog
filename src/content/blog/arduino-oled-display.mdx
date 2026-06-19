@@ -1,6 +1,6 @@
 ---
-title: "Arduino with OLED Display"
-description: "Run an OLED display with Arduino: text, shapes, animations and bitmap graphics."
+title: "Arduino OLED Display Tutorial (Wiring & Code)"
+description: "Learn how to connect and program an OLED Arduino display. Complete guide covering I2C wiring, Adafruit SSD1306 code snippets, text, and bitmap graphics."
 pubDate: "May 22 2025"
 published: true
 tags: ["electronics", "tutorial"]
@@ -10,37 +10,82 @@ https://youtu.be/___p9JYbTc0
 
 ## Overview
 
-In this tutorial, I demonstrate how to connect and program one of the most popular components in the maker community: the OLED display. Whether you are looking to display sensor data, create custom animations, in general - add a user interface to your Arduino project, this guide covers all the basics.
+If you want to add a user interface, display sensor data, or create custom animations, an **OLED Arduino display** is one of the most popular and versatile components you can use. 
 
-In the accompanying video, I walk you through:
+In this guide, I'll walk you through everything you need to know about setting up an OLED display with an Arduino, including how to draw basic text, geometric shapes, and scrolling animations. For the complete visual walkthrough and advanced bitmap image rendering, be sure to check out the accompanying video above!
 
-- Hardware Setup: Understanding I2C vs SPI and 3.3V vs 5V logic.
-- Driver Distinctions: The difference between SSD1306 and SH1106 drivers.
-- Basic Drawing: Displaying text and geometric shapes.
-- Motion: Implementing scrolling text.
-- Graphics: Converting and displaying custom images (bitmaps).
+## Understanding Your OLED Arduino Display
 
-## Why OLED?
+Before wiring anything, it's important to understand the hardware you are working with. There are a few common points of confusion:
 
-[OLED displays](https://en.wikipedia.org/wiki/OLED) replaced [LCDs](https://en.wikipedia.org/wiki/Liquid-crystal_display) in many projects because they are more energy-efficient, have better contrast and are more compact. They are also more durable and have a longer lifespan than LCDs. They are unarguably better.
+- **3.3V vs 5V Logic:** Most of these displays can tolerate both 3.3V and 5V, so powering them is usually straightforward.
+- **I2C vs SPI Communication:** Check the pins on your display. If your OLED has `SCL` and `SDA` pins, it uses **I2C**. If you see pins labeled `DC` or `CS`, it uses **SPI**. In this tutorial, we are focusing on the highly popular I2C version.
+- **SSD1306 vs SH1106 Drivers:** Displays might look identical but use different drivers. I am using an SH1106 driver, but it runs perfectly fine using the standard SSD1306 library. Just keep in mind that the SH1106 has a 132-column wide RAM, while the SSD1306 is 128 columns wide. For basic text, it doesn't matter, but it's worth noting for precise animations.
 
-## **Quick start**
+## Wiring the OLED Display to your Arduino
 
-For this project, I am using an [Arduino Nano 33 BLE Sense](https://docs.arduino.cc/hardware/nano-33-ble-sense/), but the code and wiring are compatible with the classic Arduino Uno and Nano as well.
+For this project, I am using an [Arduino Nano 33 BLE Sense](https://docs.arduino.cc/hardware/nano-33-ble-sense/), but the wiring is exactly the same for the classic Arduino Uno or standard Arduino Nano.
 
-Identifying Your Display
-Before wiring, check your pins to identify the communication protocol:
+Here is the standard I2C wiring pinout:
 
-- I2C (Used in this tutorial): Pins labeled SCL and SDA.
-- SPI: Pins labeled DC, CS, etc.
+- **VCC** → Connect to 3.3V (or 5V depending on your board/display specs)
+- **GND** → Connect to Ground
+- **SCL (Serial Clock)** → Connect to Arduino **A5**
+- **SDA (Serial Data)** → Connect to Arduino **A4**
 
-I2C Wiring Guide
+*(Note: On standard Arduinos like the Uno and Nano, A4 and A5 are the dedicated I2C pins).*
 
-- VCC → Connect to 3.3V (Most displays tolerate 5V, but check your specs).
-- GND → Connect to Ground.
-- SCL (Serial Clock) → Connect to A5.
-- SDA (Serial Data) → Connect to A4.
+## Arduino OLED Code: Displaying Basic Text
 
-To get the display running, you need to install two specific libraries: [Adafruit GFX Library](https://github.com/adafruit/Adafruit-GFX-Library) and [Adafruit SSD1306](https://github.com/adafruit/Adafruit_SSD1306) and load on of the available [code snippets](https://github.com/mcdominik/source/tree/main/arduino/oled_tutorial)
+To get the display running, you first need to install two core libraries in your Arduino IDE:
+1. `Adafruit GFX Library`
+2. `Adafruit SSD1306`
 
-More details and explanations in the video!
+Once installed, here is the basic code snippet to initialize the display and print your first text:
+
+```cpp
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+// Initialize the display object
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+void setup() {
+  // The default I2C address is usually 0x3C
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    for(;;); // Don't proceed, loop forever
+  }
+
+  display.clearDisplay();
+  
+  display.setTextSize(1);      // Set text size from 1 to 8
+  display.setTextColor(WHITE); // White maps to logic 1 on monochrome displays
+  display.setCursor(0, 0);     // Starting coordinates
+
+  display.println("Hello, Arduino!");
+  
+  display.display(); // Actually push the data to the screen
+}
+
+void loop() {
+  // Empty for this simple example
+}
+```
+
+## Advanced: Scrolling, Shapes, and Custom Bitmaps
+
+The `Adafruit_GFX` library makes it incredibly easy to do much more than just print text:
+- **Scrolling:** You can trigger built-in hardware scrolling using methods like `display.startscrollright(0x00, 0x0F)`.
+- **Shapes:** Drawing triangles, circles, and lines only takes a single function call (e.g., `display.drawTriangle(...)`).
+- **Custom Images:** You can display your own logos and graphics by converting normal photos into 1-bit monochrome byte arrays. 
+
+I wrote a custom Python script that easily converts any image into a C-array that the Arduino can render using `display.drawBitmap()`. 
+
+**Want to see exactly how to code the animations, draw complex shapes, and use the Python image converter? Watch the video at the top of the page for the full demonstration!**
+
+You can also find all the advanced code snippets in the [project repository here](https://github.com/mcdominik/source/tree/main/arduino/oled_tutorial).
