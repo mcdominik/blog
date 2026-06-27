@@ -6,21 +6,21 @@ published: true
 tags: ["tips", "JavaScript"]
 ---
 
-> ⚠️ Choosing the wrong one can hurt your database performance at scale. Sick!
+> ⚠️ Choosing the wrong one can hurt your database performance at scale.!
 
 ## What is a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier)?
 
-UUID is a **Universally Unique Identifier** - a 128-bit number used (as the name suggests) to uniquely identify objects in distributed systems.
+**Universally Unique Identifier** (UUID) is a 128-bit number used (as the name suggests) to uniquely identify objects in distributed systems.
 
 There are currently eight versions, but I'm not going to go through all of them. Let’s focus on **v4** and **v7**, as they are the two most popular choices for production environments today.
 
-### UUID v4 - Purely Random
+### UUID v4
 
 The most common version, consisting almost entirely of random bits.
 
 ![UUID v4 Structure](../../assets/posts/uuid/uuid-v4-structure.svg)
 
-### UUID v7 - Time-ordered
+### UUID v7
 
 It combines a Unix timestamp (in milliseconds) with random data. This makes it **sortable**, which is ideal for database primary keys.
 
@@ -44,7 +44,6 @@ They use **Cryptographically Secure Pseudorandom Number Generators ([CSPRNG](htt
 | Collision space  | Global         | Per-millisecond |
 | Practical safety | Extremely safe | Still very safe |
 
-They won't collide.
 
 128-bit identifiers. To put that in perspective, if you generated 1 million IDs every second for the next 100 years, the probability of a single collision is about 0.0001%.
 
@@ -52,7 +51,7 @@ While UUID v7 replaces some random bits with a timestamp, it still leaves **74 b
 
 ## Which one is better?
 
-Both are greeat, but **UUID v7** can offer better performance. Its time-sorted nature is a game-changer for high-performance database inserts (keeping the B-tree index happy).
+Both are great, but **UUID v7** can offer better performance. Its time-sorted nature is a game-changer for high-performance database inserts (keeping the [B-tree](https://en.wikipedia.org/wiki/B-tree) index happy).
 
 However, we are talking about scale here. If your table has fewer than 10M rows, the performance boost might be negligible. One advantage of **UUID v4** is that it comes built-in with modern JavaScript via `crypto.randomUUID()`, so you don't need external dependencies (though v7 support will likely be standardized soon).
 
@@ -70,12 +69,14 @@ If you've been around the JavaScript ecosystem, you’ve definitely run into **N
 
 It's **smaller and faster**. Because it uses a larger alphabet (64 characters instead of 16), it achieves the same collision resistance as a UUID v4 while being significantly shorter. This makes it the champion for **public-facing URLs** where a long UUID looks clunky.
 
-**Standardization is king.** Most relational databases (like Postgres) have a native `UUID` data type. They store these as 128-bit binary data under the hood, which is much more efficient than storing a NanoID as a `VARCHAR` string.
+However, most relational databases (like Postgres) have a native `UUID` data type. They store these as 128-bit binary data under the hood, which is much more efficient than storing a NanoID as a `VARCHAR` string.
 
 > **Rule of thumb:** If the ID is going in a URL, use **NanoID**.
 
 ## TL;DR
 
+
+- **UUID v7** shines at scale; if your table is less than 10M rows, UUID v4 is just fine.
 - **Use UUID v7** for modern database primary keys (faster indexing).
 - **Use UUID v4** for zero-dependency apps. It’s built into the native crypto API.
 - **Use NanoID** for clean, user-friendly URLs.
