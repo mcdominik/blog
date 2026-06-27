@@ -6,16 +6,16 @@ published: true
 tags: ["tips", "JavaScript", "database"]
 ---
 
-I was working on a fintech project. When I joined, everybody stored monetary values however they wished - text, decimals, or even floats (scary). 
-It was chaos, but it seemed to work smoothly. The issues started to appear when we scaled up (like mushrooms after the rain - it's a Polish proverb describing something that appears very fast and in large quantities, not sure if it's used worldwide).
+I once worked on a fintech project where monetary values were stored however they wished - as text, decimals, or even floats (scary).
+I'll spare you the details of this system, but it still lives in my head and ruins the quality of my sleep.
 
-I'll spare you the details of this system, but it still lives in my head and lowers the quality of my sleep.
+I spent a lot of time fighting with LLMs that were trying to overengineer a solution to this problem.
+I'm writing this to save you time, because the rules are pretty straightforward.
 
 ## The floating-point trap
 
 To start off, here is how you should *never* store monetary values: floats or doubles.
 
-What's wrong with them?
 
 Here is a textbook example: how much is `0.1 + 0.2`?
 
@@ -38,7 +38,7 @@ println!("{:.17}", 0.1_f64 + 0.2_f64); // 0.30000000000000004
 
 Nice! They all agree - the problem is, it's not true.
 
-These types are just approximations. This might be obvious to some, but I didn't know it for the first 4 years of my professional SWE career (maybe "lifecycle" fits better), so let that sink in!
+These types are just approximations. This might be obvious to some, but I didn't know it for the first 4 years of my professional SWE career, so let that sink in!
 
 The outcome is the same because all of them are based on the IEEE 754 standard: a number is stored as a sign bit, an exponent, and a mantissa (the significant digits). A float (often called single precision because it's 32 bits) gives you ~7 significant decimal digits of precision, and a double (because it's 64 bits) gives you ~15-16.
 
@@ -56,17 +56,17 @@ If you go global, be careful because not all currencies follow the "100 cents = 
 
 This is a second good option. It requires less refactoring, so in my opinion, it's better for systems already in production (but it's not a rule, your system may be different!).
 
-Is `NUMERIC` the same as `DECIMAL`? Yes, it is. They are literally the same thing - different database vendors just called it differently before any common standard was established.
+`NUMERIC` and `DECIMAL` are literally the same thing - different database vendors just called it differently before any common standard was established.
 
 This type allows you to choose your granularity (how many digits you want to keep).
 
 For example, `NUMERIC(10, 2)` allows you to store up to 10 digits in total, with 2 digits after the decimal point. So in theory, it allows you to store up to 10^8 (100,000,000).
 
-Both `NUMERIC` and integer types solve the precision loss problem. But there is a catch if you are using JavaScript (there is like 70% chance you are).
+Both `NUMERIC` and integer types solve the precision loss problem. But there is a catch if you are using JavaScript.
 
 ## The JavaScript trap
 
-Let's say your database table stores `product_price` and `shipping_cost` (both as `NUMERIC`). You want to calculate the total price before billing the customer.
+Let's say your database table stores `price` and `shipping_cost` (both as `NUMERIC`). You want to calculate the total price before billing the customer.
 
 | product_id | price | shipping_cost |
 | :--- | :--- | :--- |
@@ -81,7 +81,7 @@ await userBalanceService.charge(123, totalPrice);
 console.log(totalPrice); // "9910.99"
 ```
 
-Shit. We just overcharged the user by $9 801.
+We just overcharged the user by $9 801!
 
 Why did this happen? The database driver returned string representations of the numbers.
 
