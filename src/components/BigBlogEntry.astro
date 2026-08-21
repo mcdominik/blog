@@ -21,10 +21,12 @@ const { title, description, pubDate, slug, heroImage, tags, noImage } =
   }
   <div class="h-full flex flex-col justify-center">
     <div class="flex items-center gap-x-4 text-xs">
-      <time datetime="2020-03-16" class="text-base-500">
+      <time datetime={pubDate} class="text-base-500 shrink-0">
         <FormattedDate date={pubDate} />
       </time>
-      {tags?.map((tag: string) => <Tag {tag} />)}
+      <div class="flex gap-2 flex-wrap">
+        {tags?.map((tag: string) => <Tag {tag} />)}
+      </div>
     </div>
     <div class="max-w-xl">
       <div
