@@ -25,11 +25,11 @@ export async function getStaticPaths() {
     const totalPages = Math.ceil(count / POSTS_PER_PAGE);
 
     paths.push({
-      params: { tag: sanitizedTag },
+      params: { tag: sanitizedTag, index: undefined },
       props: { tag, index: 1 },
     });
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 2; i <= totalPages; i++) {
       paths.push({
         params: { tag: sanitizedTag, index: i.toString() },
         props: { tag, index: i },
@@ -58,7 +58,7 @@ const total = Math.ceil(
       <p
         class="not-prose bold text-xl rounded-full inline-block bg-base-200 px-4 py-1.5 text-base-800 dark:bg-base-800 dark:text-base-300 border border-base-300 dark:border-base-700"
       >
-        {tag}
+        #{tag}
       </p>
     </div>
   </h1>

@@ -41,7 +41,7 @@ if (replacedHero && !images[replacedHero])
       replacedHero && post.data.hideHero !== true && SHOW_IMAGES ? (
         <Image
           src={images[replacedHero]()}
-          alt=""
+          alt={post.data.title}
           class="w-full h-80 object-cover rounded-xl shadow border border-base-400 dark:border-base-700"
         />
       ) : null

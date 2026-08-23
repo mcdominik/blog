@@ -28,7 +28,7 @@ export const ABOUT_DESCRIPTION =
 export const SITE_FAVICON = "";
 
 // will be used in the footer as the name of the author (c) <YEAR> <NAME> - LICENSE
-export const NAME = "";
+export const NAME = "Dominik Mackiewicz";
 
 // will be used in the footer as the license of the content (e.g. "All right reserved" or "CC-BY-SA 4.0")
 export const LICENSE = "MIT licensed.";
@@ -78,7 +78,7 @@ export const SHOW_IMAGES = true;
 export const POSTS_PER_PAGE = 8;
 
 // will be shown in the header, if left blank will instead show the SITE_TITLE
-export const SITE_NAME = "";
+export const SITE_NAME = "Dominik Labs";
 
 // if true, will show the SITE_FAVICON in the header
 export const SHOW_FAVICON_IN_HEADER = true;

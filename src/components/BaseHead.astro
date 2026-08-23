@@ -1,5 +1,5 @@
 ---
-import { BASE, SITE, SITE_TITLE } from "../config.ts";
+import { BASE, SITE, SITE_TITLE, SITE_NAME, NAME } from "../config.ts";
 import favicon16 from "../assets/favicon/favicon-16x16.png";
 import favicon32 from "../assets/favicon/favicon-32x32.png";
 import appleTouchIcon from "../assets/favicon/apple-touch-icon.png";
@@ -25,7 +25,10 @@ const {
 } = Astro.props;
 
 const ogType = type === "article" ? "article" : "website";
-const ogImageURL = new URL(BASE + "/open-graph/" + image, Astro.url);
+const siteName = SITE_NAME || SITE_TITLE;
+const authorName = NAME || "Dominik Mackiewicz";
+const baseSite = Astro.site ?? Astro.url;
+const ogImageURL = new URL(BASE + "/open-graph/" + image, baseSite);
 
 // Build JSON-LD structured data
 const jsonLd =
@@ -45,7 +48,7 @@ const jsonLd =
             : {}),
         author: {
           "@type": "Person",
-          name: "Dominik Mackiewicz",
+          name: authorName,
           url: SITE,
         },
         mainEntityOfPage: {
@@ -54,14 +57,14 @@ const jsonLd =
         },
         publisher: {
           "@type": "Organization",
-          name: SITE_TITLE,
+          name: siteName,
           url: SITE,
         },
       }
     : {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        name: SITE_TITLE,
+        name: siteName,
         url: SITE,
       };
 ---

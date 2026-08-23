@@ -1,5 +1,5 @@
 ---
-import { SITE_TITLE, SITE_DESCRIPTION } from "../config.ts";
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_NAME } from "../config.ts";
 
 import Footer from "$components/Footer.astro";
 import Header from "$components/Header.astro";
@@ -16,12 +16,46 @@ type Props = {
   currentPage: number;
   tag?: string;
   showFeatured?: boolean;
+  title?: string;
+  description?: string;
 };
 
-const { posts, totalPages, currentPage, tag, showFeatured } = Astro.props;
+const {
+  posts,
+  totalPages,
+  currentPage,
+  tag,
+  showFeatured,
+  title: customTitle,
+  description: customDescription,
+} = Astro.props;
+
+const brand = SITE_NAME || "Dominik Labs";
+let pageTitle = customTitle;
+let pageDescription = customDescription;
+
+if (!pageTitle) {
+  if (tag) {
+    pageTitle = `Posts tagged with #${tag}${currentPage > 1 ? ` - Page ${currentPage}` : ""} | ${brand}`;
+  } else if (currentPage > 1) {
+    pageTitle = `All blog posts - Page ${currentPage} | ${brand}`;
+  } else {
+    pageTitle = SITE_TITLE;
+  }
+}
+
+if (!pageDescription) {
+  if (tag) {
+    pageDescription = `Explore all articles and tutorials tagged with #${tag} on ${brand}.${currentPage > 1 ? ` Page ${currentPage} of ${totalPages}.` : ""}`;
+  } else if (currentPage > 1) {
+    pageDescription = `Browse page ${currentPage} of all blog posts, guides, and tutorials on ${brand}.`;
+  } else {
+    pageDescription = SITE_DESCRIPTION;
+  }
+}
 ---
 
-<BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+<BaseLayout title={pageTitle} description={pageDescription}>
   <Header active="blog" />
   <main class="max-w-2xl lg:max-w-3xl mx-auto mt-8 px-4">
     <ProseWrapper class="pb-8">
