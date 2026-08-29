@@ -8,7 +8,7 @@ tags: ["tips", "TypeScript"]
 
 ## What are enums and why do we use them?
 
-How to recognize an inexperienced programmer:
+Is there anything wrong with the snippet below?
 
 ```ts
 // typo-prone code
@@ -17,7 +17,7 @@ if (status !== "active") {
 }
 ```
 
-We know this is a bad idea. A small typo is enough, and our active users will get flooded with activation emails. Not very professional.
+A small typo is enough, and our active users will get flooded with activation emails. Not very professional.
 
 ```ts
 // oops!
@@ -41,7 +41,7 @@ if (status !== Status.Active) {
 
 Looks nice. But it introduces unnecessary complexity.
 
-- The "enum footprint" follows us everywhere — we have to import it in every file where we operate on the variable.
+- The "enum footprint" follows us everywhere, we have to import it in every file where we operate on the variable.
 - After transpilation (TypeScript → JavaScript), it generates additional JavaScript (extra bundle size):
 
 ```js
@@ -53,7 +53,7 @@ var Status;
 })(Status || (Status = {}));
 ```
 
-- It breaks DRY — for small enums this might sound like a joke, but verbose ones can get truly ugly:
+- It breaks [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself), for small enums it's negligible, but verbose ones can get truly ugly:
 
 ```ts
 FOREIGN_LINKED_BANK_ACCOUNT_PROFILE = "FOREIGN_LINKED_BANK_ACCOUNT_PROFILE";
@@ -113,4 +113,4 @@ if (status !== "active") {
 
 ## TL;DR
 
-Enums aren't inherently bad, but replacing them with literal types or the `as const` array/object pattern provides the same benefits with greater elegance.
+Enums aren't inherently bad, but replacing them with literal types or the `as const` array/object pattern provides the same benefits with smaller overhead.
