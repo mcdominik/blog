@@ -9,12 +9,12 @@ tags: ["tips", "JavaScript", "database"]
 I once worked on a fintech project where monetary values were stored however they wished - as text, decimals, or even floats (scary).
 I'll spare you the details of this system, but it still lives in my head and ruins the quality of my sleep.
 
-I spent a lot of time fighting with LLMs that were trying to overengineer a solution to this problem.
-I'm writing this to save you time, because the rules are pretty straightforward.
+I spent a lot of time tangling with LLMs that were trying to overengineer a solution for this problem.
+I'm writing this to save you some time, because the rules are pretty straightforward.
 
 ## The floating-point trap
 
-To start off, here is how you should *never* store monetary values: floats or doubles.
+To start off, here is how you should `never` store monetary values: floats and doubles.
 
 
 Here is a textbook example: how much is `0.1 + 0.2`?
@@ -85,15 +85,15 @@ We just overcharged the user by $9 801!
 
 Why did this happen? The database driver returned string representations of the numbers.
 
-Howerver it's not the database fault. JavaScript only has one number type - `number`, which is a 64-bit float (double). As we discussed earlier, it only has ~15-16 digits of precision. However, in PostgreSQL, `NUMERIC` can store up to 131,072 digits before the decimal point. Since there is no safe way to fit that into a standard JavaScript number, database drivers return a string to preserve the exact value.
+It's not the database fault. JavaScript only has one number type (`number`), which is a 64-bit float (double). As we discussed earlier, it only has ~15-16 digits of precision. However, in PostgreSQL, `NUMERIC` can store up to 131,072 digits before the decimal point. Since there is no safe way to fit that into a standard JavaScript number, database drivers return a string to preserve the exact value.
 
 And JavaScript is pretty liberal about string arithmetic, so `"99" + "10.99"` is `"9910.99"`.
 
 ## How to fix it
 
-We could manually parse it and write our own wrappers. But unless you are counting every single kilobyte of your bundle size, there is no need to reinvent the wheel. There are already a couple of lightweight, battle-tested npm packages that solved this issue years ago - like `decimal.js`, `big.js`, or `bignumber.js`.
+We could manually parse it and write our own wrappers. But unless you are counting every single kilobyte of your bundle size, there is no need to reinvent the wheel. There are already a couple of lightweight, battle-tested npm packages that solved this issue years ago, like `decimal.js`, `big.js`, or `bignumber.js`.
 
-Personally, I like `decimal.js`.
+Example usage of `decimal.js`.
 
 ```javascript
 const product = await client.getProduct(123);
@@ -108,4 +108,4 @@ console.log(totalPrice.toString()); // '109.99'
 
 1. **NEVER** store monetary values as floats or doubles.
 2. Use **`NUMERIC` / `DECIMAL`** in your database, or use **integers** (storing cents instead of dollars).
-3. If you use `NUMERIC` / `DECIMAL` with JavaScript, watch out for string concatenation and **always** wrap your math operations using a library like `decimal.js`.
+3. If you use `NUMERIC` / `DECIMAL` with JavaScript, watch out for string concatenation and **always** wrap your math operations using a library like `decimal.js` or custom parsing logic.
