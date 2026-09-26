@@ -58,9 +58,9 @@ export const SOCIAL_LINKS: {
   SHOW_RSS?: boolean;
 } = {
   SHOW_RSS: true,
-  YOUTUBE_URL: "https://www.youtube.com/@mixed-matrix-arts",
+  YOUTUBE_URL: "https://www.youtube.com/@DominikBuilds",
   GITHUB_URL: "https://github.com/mcdominik",
-  EMAIL: "ddominik.mackiewicz@gmail.com",
+  EMAIL: "mojspecjalnyemail@gmail.com",
 };
 
 // EVEN MORE SETTINGS:
