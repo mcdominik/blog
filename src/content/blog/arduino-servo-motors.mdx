@@ -54,6 +54,8 @@ Always verify your servo's pinout in its datasheet before applying power.
 
 ## Wiring guide
 
+The wiring diagrams below use an [Arduino Nano](https://docs.arduino.cc/hardware/nano/), but the pin connections (5V, GND, and digital pin 9) are identical on the Arduino Uno and other standard boards.
+
 ### Option 1: Direct wiring (bench testing only)
 
 Use this method only for a single unloaded micro servo during brief bench tests:
@@ -61,6 +63,8 @@ Use this method only for a single unloaded micro servo during brief bench tests:
 - VCC to Arduino 5V
 - GND to Arduino GND
 - Signal to Arduino pin 9 (or any digital pin)
+
+![Arduino Nano connected directly to SG90 micro servo motor](../../assets/posts/arduino/arduino-nano-sg90-servo.webp)
 
 ### Option 2: External power wiring (recommended)
 
@@ -70,6 +74,8 @@ Use this method for all production projects, loaded motors, and multi-servo setu
 - Servo GND to external power supply GND and Arduino GND (common ground)
 - Servo signal to Arduino pin 9
 
+![Arduino Nano external power wiring diagram for servo motor with shared ground](../../assets/posts/arduino/arduino-nano-servo-external-power.webp)
+
 > **Tip:** Add an electrolytic capacitor (100 µF to 470 µF) directly across the servo power and ground rails near the motor. The capacitor acts as a local energy reservoir, smoothing out inductive spikes and preventing jitter.
 
 ---
@@ -78,7 +84,7 @@ Use this method for all production projects, loaded motors, and multi-servo setu
 
 Servos do not receive discrete digital packets or varying DC voltage levels. Instead, the microcontroller sends a repetitive square-wave signal known as **pulse width modulation (PWM)**.
 
-A standard hobby servo expects a 50 Hz control signal, which corresponds to a 20 ms pulse period. The duration of the high pulse dictates the target position of the output shaft:
+A standard hobby expects a 50 Hz control signal, which corresponds to a 20 ms pulse period. The duration of the high pulse dictates the target position of the output shaft:
 
 - **1.0 ms pulse** – positions the servo at 0 degrees.
 - **1.5 ms pulse** – centers the servo at 90 degrees.
