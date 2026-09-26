@@ -1,84 +1,91 @@
 ---
-title: "UUID v4 vs v7 vs Nano ID: Which Should You Use?"
-description: "Compare UUID v4, UUID v7 and Nano ID: database index performance, collision probability, and when to use each in Node.js."
+title: "UUID v4 vs. v7 vs. Nano ID: Which should you use?"
+description: "Compare UUID v4, UUID v7, and Nano ID: database index performance, collision probability, and when to use each in your applications."
 pubDate: "Feb 25 2026"
 published: true
 tags: ["tips", "JavaScript"]
 ---
 
-> ⚠️ Choosing the wrong one can hurt your database performance at scale!
+> **Warning:** Choosing the wrong identifier format can degrade database performance at scale.
 
 ## What is a UUID?
 
-**Universally Unique Identifier** ([UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier)) is a 128-bit number used (as the name suggests) to uniquely identify objects in distributed systems.
+A [Universally Unique Identifier (UUID)](https://en.wikipedia.org/wiki/Universally_unique_identifier) is a 128-bit value designed to uniquely identify resources across distributed systems without requiring a central coordinating authority.
 
-There are currently eight versions, but I'm not going to go through all of them. Let’s focus on **v4** and **v7**, as they are the two most popular choices for production environments today.
+While the RFC 9562 standard defines eight versions, UUID v4 and UUID v7 are the two primary choices for modern application development.
 
-### UUID v4
+### UUID v4: Random identifiers
 
-The most common version, consisting almost entirely of random bits.
+UUID v4 is the most widely adopted version. It consists of 122 pseudo-random bits, offering virtually zero chance of collision across distributed nodes.
 
 ![UUID v4 Structure](../../assets/posts/uuid/uuid-v4-structure.svg)
 
-### UUID v7
+### UUID v7: Time-ordered identifiers
 
-It combines a Unix timestamp (in milliseconds) with random data. This makes it **sortable**, which is ideal for database primary keys.
+UUID v7 combines a 48-bit Unix timestamp (in milliseconds) with 74 bits of randomness. Because the most significant bits represent time, UUID v7 values sort chronologically. This time-ordered layout makes it ideal for database primary keys and clustered indexes.
 
 ![UUID v7 Structure](../../assets/posts/uuid/uuid-v7-structure.svg)
 
 ---
 
-## (Egghead corner) Random or pseudorandom?
+## How UUID generators create secure randomness
 
-You probably know that functions like `Math.random()` generate [pseudorandom](https://en.wikipedia.org/wiki/Pseudorandomness) numbers. Modern crypto libraries, like the built-in Node.js [crypto](http://nodejs.org/api/crypto.html) or the [uuid](https://www.npmjs.com/package/uuid) package, are much smarter.
+Functions like `Math.random()` generate [pseudorandom numbers](https://en.wikipedia.org/wiki/Pseudorandomness) using predictable algorithms, making them unsuitable for secure IDs.
 
-They use **Cryptographically Secure Pseudorandom Number Generators ([CSPRNG](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator))**, calling OS-level APIs to seed from real entropy based on unpredictable hardware events - like the specific mouse movements created by an unpredictable human (you).
-
----
-
-## (Egghead corner) Duplication probability?
-
-|                  | UUIDv4         | UUIDv7          |
-| ---------------- | -------------- | --------------- |
-| Random bits      | 122            | 74              |
-| Collision space  | Global         | Per-millisecond |
-| Practical safety | Extremely safe | Still very safe |
-
-
-128-bit identifiers. To put that in perspective, if you generated 1 million IDs every second for the next 100 years, the probability of a single collision is about 0.0001%.
-
-While UUID v7 replaces some random bits with a timestamp, it still leaves **74 bits of randomness** and that's for one millisecond space! Impossible to reach in real world systems.
-
-## UUID v4 vs v7: Which One Is Better?
-
-Both are great, but **UUID v7** can offer better performance. Its time-sorted nature is a game-changer for high-performance database inserts (keeping the [B-tree](https://en.wikipedia.org/wiki/B-tree) index happy).
-
-However, we are talking about scale here. If your table has fewer than 10M rows, the performance boost might be negligible. One advantage of **UUID v4** is that it comes built-in with modern JavaScript via `crypto.randomUUID()`, so you don't need external dependencies (though v7 support will likely be standardized soon).
+Modern runtimes and libraries – such as the Node.js [crypto module](https://nodejs.org/api/crypto.html) or the [uuid package](https://www.npmjs.com/package/uuid) – rely on [Cryptographically Secure Pseudorandom Number Generators (CSPRNG)](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator). These generators call operating system APIs to seed from system entropy gathered from unpredictable hardware events.
 
 ---
 
-## What About Nano ID?
+## Collision probability: Can two UUIDs collide?
 
-If you've been around the JavaScript ecosystem, you’ve definitely run into **NanoID**. Here’s how they actually stack up:
+| Metric | UUID v4 | UUID v7 |
+| :--- | :--- | :--- |
+| Random bits | 122 | 74 |
+| Collision window | Entire identifier space | Per millisecond |
+| Practical risk | Negligible | Negligible |
 
-| Feature             | UUID (v4/v7)                 | NanoID                            |
-| :------------------ | :--------------------------- | :-------------------------------- |
-| **Size**            | 36 characters (with dashes)  | 21 characters (default)           |
-| **Alphabet**        | Hexadecimal (0-9, a-f)       | URL-friendly (A-Z, a-z, 0-9, \_-) |
-| **Standardization** | RFC 9562 (Industry Standard) | Library-specific                  |
+To put 128-bit identifiers into perspective: if you generate one million IDs every second for the next 100 years, the probability of a single collision remains around 0.0001%.
 
-It's **smaller and faster**. Because it uses a larger alphabet (64 characters instead of 16), it achieves the same collision resistance as a UUID v4 while being significantly shorter. This makes it the champion for **public-facing URLs** where a long UUID looks clunky.
+UUID v7 trades 48 bits of randomness for a timestamp, but its 74 remaining random bits apply to a single 1-millisecond window. You would need to generate hundreds of billions of IDs within the same millisecond on a single machine to risk a duplicate – a scenario that physical hardware constraints make virtually impossible in real-world systems.
 
-However, most relational databases (like Postgres) have a native `UUID` data type. They store these as 128-bit binary data under the hood, which is much more efficient than storing a NanoID as a `VARCHAR` string.
+---
 
-> **Rule of thumb:** If the ID is going in a URL, use **NanoID**.
+## Database index performance: UUID v4 vs. UUID v7
 
-## TL;DR: Which UUID to Choose
+For relational database primary keys, UUID v7 is the superior choice.
 
+Relational databases like PostgreSQL store primary keys in a [B-tree index](https://en.wikipedia.org/wiki/B-tree). Because UUID v4 values are entirely random, each new insert lands at an unpredictable location in the index tree. As tables grow, this randomness forces the database engine to constantly swap pages in memory, leading to severe index fragmentation and elevated disk I/O.
 
-- **UUID v7** shines at scale; if your table is less than 10M rows, UUID v4 is just fine.
-- **Use UUID v7** for modern database primary keys (faster indexing).
-- **Use UUID v4** for zero-dependency apps. It’s built into the native crypto API.
-- **Use NanoID** for clean, user-friendly URLs.
+Because UUID v7 values are sequential, new inserts append to the end of the B-tree leaf pages. This preserves memory cache locality and keeps write throughput predictable even as tables grow past millions of records.
 
-Designing a database schema? Also read [how to store money in a database](/posts/store-monetary-values/).
+If your dataset contains fewer than 10 million rows, this performance gap is often unnoticeable. In that case, UUID v4 remains attractive because modern JavaScript runtimes support it natively with `crypto.randomUUID()`, requiring no third-party dependencies.
+
+---
+
+## When to use Nano ID
+
+If you work in the JavaScript ecosystem, you have likely encountered [Nano ID](https://github.com/ai/nanoid). Here is how it compares to standard UUIDs:
+
+| Feature | UUID (v4 and v7) | Nano ID |
+| :--- | :--- | :--- |
+| Size | 36 characters (with hyphens) | 21 characters (default) |
+| Alphabet | Hexadecimal (`0-9`, `a-f`) | URL-safe (`A-Z`, `a-z`, `0-9`, `_`, `-`) |
+| Standard | RFC 9562 | Library-specific |
+
+Nano ID is smaller and faster for public URLs. Because it uses a 64-character URL-friendly alphabet instead of 16 hexadecimal characters, it provides collision resistance comparable to UUID v4 in 21 characters instead of 36. This compact footprint makes it ideal for public URLs, shareable links, and short codes.
+
+However, relational databases like PostgreSQL provide a native 128-bit `UUID` data type stored efficiently as 16 binary bytes. In contrast, storing a Nano ID requires a `VARCHAR(21)` or `CHAR(21)` column, which consumes more disk space and indexes less efficiently than a native binary UUID.
+
+> **Rule of thumb:** Use Nano ID for user-facing URLs and slug parameters. Use UUID for internal primary keys.
+
+---
+
+## Summary: Which identifier should you choose?
+
+- **UUID v7** – Choose for database primary keys and clustered indexes. Time ordering prevents B-tree fragmentation and maintains consistent insert throughput at scale.
+
+- **UUID v4** – Choose for internal identifiers in zero-dependency environments. It is built into the native JavaScript `crypto.randomUUID()` API and requires no third-party packages.
+
+- **Nano ID** – Choose for public-facing URLs, invite tokens, and short codes where readable, compact strings improve the user experience.
+
+Designing a database schema? Read my guide on [how to store money in a database](/posts/store-monetary-values/).
