@@ -1,25 +1,22 @@
 ---
-title: "How to Store Money in a Database: Floats vs Cents vs DECIMAL"
-description: "Why you should never store money as float, and when to use integer cents or NUMERIC/DECIMAL in PostgreSQL and JavaScript."
+title: "How to store money in a database: Floats vs. cents vs. DECIMAL"
+description: "Why you should never store money as a float, and when to use integer cents or NUMERIC/DECIMAL in PostgreSQL and JavaScript."
 pubDate: "Jun 14 2026"
 published: true
 tags: ["tips", "JavaScript", "database"]
 ---
 
-I once worked on a fintech project where monetary values were stored however they wished - as text, decimals, or even floats (scary).
-I'll spare you the details of this system, but it still lives in my head and ruins the quality of my sleep.
+> **Warning:** Never use floating-point types (`FLOAT`, `DOUBLE`, or `REAL`) to store monetary values. Floating-point rounding errors cause calculation drift, corrupt account balances, and break financial audits.
 
-I spent a lot of time tangling with LLMs that were trying to overengineer a solution for this problem.
-I'm writing this to save you some time, because the rules are pretty straightforward.
+Handling money in software seems straightforward until rounding errors creep into production. Whether building an e-commerce checkout, a billing pipeline, or an accounting ledger, you must store values precisely and prevent runtime conversion errors.
 
-## Why You Should Never Store Money as Float
+---
 
-To start off, here is how you should `never` store monetary values: floats and doubles.
+## Why you should never store money as a float
 
+Binary floating-point numbers follow the [IEEE 754 standard](https://en.wikipedia.org/wiki/IEEE_754). In base 10, fractions like $1/10$ ($0.1$) and $2/10$ ($0.2$) are clean decimal values. But in base 2 (binary), $0.1$ is an infinite repeating fraction, similar to $1/3$ in base 10 ($0.3333\dots$). Because computers allocate finite memory to numbers, they truncate the repeating bits.
 
-Here is a textbook example: how much is `0.1 + 0.2`?
-
-It depends on who you ask.
+This truncation creates rounding discrepancies in common arithmetic:
 
 ```javascript
 // JavaScript
@@ -36,78 +33,154 @@ print(0.1 + 0.2) # 0.30000000000000004
 println!("{:.17}", 0.1_f64 + 0.2_f64); // 0.30000000000000004
 ```
 
-Nice! They all agree - the problem is, it's not true.
+All three languages produce identical results because their runtimes implement standard IEEE 754 floating-point representations:
 
-These types are just approximations. This might be obvious to some, but I didn't know it for the first 4 years of my professional SWE career, so let that sink in!
+- **Single precision (`float`)** – Allocates 32 bits and provides roughly seven decimal digits of precision.
 
-The outcome is the same because all of them are based on the IEEE 754 standard: a number is stored as a sign bit, an exponent, and a mantissa (the significant digits). A float (often called single precision because it's 32 bits) gives you ~7 significant decimal digits of precision, and a double (because it's 64 bits) gives you ~15-16.
+- **Double precision (`double`)** – Allocates 64 bits and provides roughly 15–16 decimal digits of precision.
 
 ![IEEE 754 standard](../../assets/posts/monetary/IEEE_754_Floating_Point.svg)
 
-## Option 1: Store Money as Integers (Cents)
+A fractional difference like `$0.00000000000000004` appears harmless on a single transaction. Over thousands of calculations, currency conversions, or compounding taxes, these tiny discrepancies compound into substantial balance errors that fail financial reconciliation.
 
-If you are in the design phase, just pick integers. For example, store `$9.99` as `999` (cents).
+---
 
-It will make your life so much easier. Leading fintech companies use this pattern, and it's proven to scale very well (e.g., Stripe).
+## Option 1: Store money as integers (cents)
 
-If you go global, be careful because not all currencies follow the "100 cents = 1 dollar" rule. However, handling that is still much less overhead than dealing with floating-point inaccuracies.
+For payment workflows and standard e-commerce stores, store currency as integers representing the smallest currency unit (such as cents for USD or EUR). For example, store `$9.99` as `999`.
 
-## Option 2: Use NUMERIC or DECIMAL Columns
+Leading payment platforms like [Stripe](https://docs.stripe.com/currencies) standardize on this pattern. Integer math eliminates decimal approximation entirely, runs quickly on all CPUs, and functions reliably across every database and programming language.
 
-This is a second good option. It requires less refactoring, so in my opinion, it's better for systems already in production (but it's not a rule, your system may be different!).
+```sql
+CREATE TABLE customer_orders (
+    id BIGINT PRIMARY KEY,
+    amount_cents BIGINT NOT NULL, -- $9.99 is stored as 999
+    currency VARCHAR(3) NOT NULL  -- ISO 4217 code: 'USD', 'EUR', 'JPY'
+);
+```
 
-`NUMERIC` and `DECIMAL` are literally the same thing - different database vendors just called it differently before any common standard was established.
+### Multi-currency considerations
 
-This type allows you to choose your granularity (how many digits you want to keep).
+While most currencies divide into 100 minor units, international currencies vary:
 
-For example, `NUMERIC(10, 2)` allows you to store up to 10 digits in total, with 2 digits after the decimal point. So in theory, it allows you to store up to 10^8 (100,000,000).
+- **Zero-decimal currencies** – Currencies like Japanese Yen (`JPY`) or South Korean Won (`KRW`) do not use minor units. An amount of `1000` represents ¥1,000.
 
-Both `NUMERIC` and integer types solve the precision loss problem. But there is a catch if you are using JavaScript.
+- **Three-decimal currencies** – Currencies like Kuwaiti Dinar (`KWD`) or Bahraini Dinar (`BHD`) divide into 1,000 minor units (fils). An amount of `1000` represents 1.000 KWD.
 
-## The JavaScript Number Trap
+When supporting international transactions, store the ISO currency code alongside the integer amount and map minor units using a currency configuration table.
 
-Let's say your database table stores `price` and `shipping_cost` (both as `NUMERIC`). You want to calculate the total price before billing the customer.
+---
+
+## Option 2: Use NUMERIC or DECIMAL columns
+
+In SQL databases, `NUMERIC` and `DECIMAL` represent exact fixed-point numbers. In engines like PostgreSQL and MySQL, the two keywords are synonymous and adhere to the SQL standard for exact arithmetic.
+
+This data type enables you to configure explicit precision (total number of digits) and scale (number of digits after the decimal point):
+
+```sql
+CREATE TABLE invoices (
+    id BIGINT PRIMARY KEY,
+    subtotal NUMERIC(12, 2) NOT NULL, -- Up to 10 digits before decimal, 2 after: 9,999,999,999.99
+    tax_rate NUMERIC(5, 4) NOT NULL   -- Enables fractional rates: e.g., 0.0825 (8.25%)
+);
+```
+
+For example, `NUMERIC(12, 2)` can store values up to `9,999,999,999.99` with exact fractional cents. If your system requires fractional unit pricing (such as per-second cloud billing, fuel rates, or cryptocurrency tokens), fixed-point columns provide precision without custom integer multipliers.
+
+Both integer cents and `NUMERIC` columns avoid precision loss inside database storage. However, querying `NUMERIC` columns into an application runtime introduces a subtle trap.
+
+---
+
+## The JavaScript number trap
+
+Suppose your database table stores `price` and `shipping_cost` as `NUMERIC(10, 2)`:
 
 | product_id | price | shipping_cost |
 | :--- | :--- | :--- |
 | 123 | 99 | 10.99 |
 
-```javascript
-const product = await client.getProduct(123);
-const totalPrice = product.price + product.shipping_cost;
+When querying the record to compute the order total before charging the customer:
 
-await userBalanceService.charge(123, totalPrice);
+```javascript
+const order = await db.getOrder(123);
+const totalPrice = order.price + order.shipping_cost;
+
+await paymentService.charge(order.userId, totalPrice);
 
 console.log(totalPrice); // "9910.99"
 ```
 
-We just overcharged the user by $9 801!
+The application charges the customer \$9,910.99 instead of \$109.99 – an overcharge of \$9,801.
 
-Why did this happen? The database driver returned string representations of the numbers.
+Why does this happen? Database drivers such as `pg` in Node.js return `NUMERIC` values as strings rather than JavaScript numbers.
 
-It's not the database fault. JavaScript only has one number type (`number`), which is a 64-bit float (double). As we discussed earlier, it only has ~15-16 digits of precision. However, in PostgreSQL, `NUMERIC` can store up to 131,072 digits before the decimal point. Since there is no safe way to fit that into a standard JavaScript number, database drivers return a string to preserve the exact value.
+This design prevents silent data loss. In JavaScript, the `number` type is an IEEE 754 64-bit float, limited to 53 bits of integer precision (safe up to `Number.MAX_SAFE_INTEGER`, or $9,007,199,254,740,991$) and roughly 15 digits of decimal precision. In PostgreSQL, a `NUMERIC` column can store up to 131,072 digits before the decimal point and 16,383 digits after. Because JavaScript numbers cannot safely represent arbitrary-precision SQL decimals, drivers return strings like `"99"` and `"10.99"` to preserve fidelity.
 
-And JavaScript is pretty liberal about string arithmetic, so `"99" + "10.99"` is `"9910.99"`.
+Because JavaScript uses the `+` operator for both string concatenation and addition, `"99" + "10.99"` evaluates to `"9910.99"`.
 
-## How to Handle Money in JavaScript
+---
 
-We could manually parse it and write our own wrappers. But unless you are counting every single kilobyte of your bundle size, there is no need to reinvent the wheel. There are already a couple of lightweight, battle-tested npm packages that solved this issue years ago, like `decimal.js`, `big.js`, or `bignumber.js`.
+## How to handle money in JavaScript
 
-Example usage of `decimal.js`.
+Never pass monetary strings into `parseFloat()`. Doing so casts values back into imprecise IEEE 754 floats, reintroducing rounding errors:
 
 ```javascript
-const product = await client.getProduct(123);
-
-const totalPrice = new Decimal(product.price).plus(product.shipping_cost);
-
-await userBalanceService.charge(123, totalPrice.toString());
-console.log(totalPrice.toString()); // '109.99'
+// Avoid parseFloat for financial arithmetic
+parseFloat("0.1") + parseFloat("0.2"); // 0.30000000000000004
 ```
 
-## TL;DR
+Instead, use an arbitrary-precision math library such as [decimal.js](https://github.com/MikeMcl/decimal.js/), [big.js](https://github.com/MikeMcl/big.js/), or [bignumber.js](https://github.com/MikeMcl/bignumber.js/). These libraries compute arithmetic in base 10 using string arrays, ensuring exact results.
 
-1. **NEVER** store monetary values as floats or doubles.
-2. Use **`NUMERIC` / `DECIMAL`** in your database, or use **integers** (storing cents instead of dollars).
-3. If you use `NUMERIC` / `DECIMAL` with JavaScript, watch out for string concatenation and **always** wrap your math operations using a library like `decimal.js` or custom parsing logic.
+Here is how to calculate order totals with `decimal.js`:
 
-Picking primary keys for the same tables? See [UUID v4 vs v7 vs Nano ID](/posts/which-uuid-is-better/).
+```javascript
+import Decimal from "decimal.js";
+
+const order = await db.getOrder(123);
+
+// Pass strings directly into Decimal to prevent float conversion
+const price = new Decimal(order.price);
+const shipping = new Decimal(order.shipping_cost);
+
+const total = price.plus(shipping);
+
+console.log(total.toString()); // "109.99"
+console.log(total.toFixed(2)); // "109.99"
+
+await paymentService.charge(order.userId, total.toString());
+```
+
+If you store amounts as integer cents, JavaScript supports native `BigInt` for 64-bit integer arithmetic without external packages:
+
+```javascript
+const subtotalCents = 9900n; // $99.00
+const shippingCents = 1099n; // $10.99
+
+const totalCents = subtotalCents + shippingCents;
+console.log(totalCents); // 10999n
+```
+
+---
+
+## Comparison: Integer cents vs. NUMERIC vs. float
+
+| Approach | Database type | Precision | Best suited for |
+| :--- | :--- | :--- | :--- |
+| **Integers (cents)** | `BIGINT` / `INTEGER` | Exact | Payment processing, checkout carts, e-commerce |
+| **Fixed-point decimal** | `NUMERIC` / `DECIMAL` | Exact | Invoicing ledgers, tax calculation, exchange rates |
+| **Floating point** | `FLOAT` / `DOUBLE` | Approximate | Scientific data and graphics (never for money) |
+
+---
+
+## Summary: How to store and handle money
+
+- **Never use floats or doubles** – Binary floating-point arithmetic introduces silent rounding errors, calculation drift, and reconciliation failures.
+
+- **Use integer cents for payments** – Store `$10.00` as `1000` using `BIGINT`. Integer math prevents rounding bugs, executes fast, and matches APIs like Stripe.
+
+- **Use `NUMERIC(p, s)` for ledgers and fractional units** – When your calculations require fractional cents, tax ratios, or unit conversions, configure exact precision and scale in SQL.
+
+- **Use arbitrary-precision libraries in JavaScript** – When reading `NUMERIC` strings from database queries, avoid native addition or `parseFloat()`. Use [decimal.js](https://github.com/MikeMcl/decimal.js/) or native `BigInt` to guarantee exact arithmetic.
+
+Picking primary keys for the same tables? See [UUID v4 vs. v7 vs. Nano ID](/posts/which-uuid-is-better/).
+
