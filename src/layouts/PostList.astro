@@ -30,7 +30,7 @@ const {
   description: customDescription,
 } = Astro.props;
 
-const brand = SITE_NAME || "Dominik Labs";
+const brand = SITE_NAME || "Dominik Builds";
 let pageTitle = customTitle;
 let pageDescription = customDescription;
 
@@ -55,7 +55,11 @@ if (!pageDescription) {
 }
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription} noindex={Boolean(tag)}>
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  noindex={Boolean(tag)}
+>
   <Header active="blog" />
   <main class="max-w-2xl lg:max-w-3xl mx-auto mt-8 px-4">
     <ProseWrapper class="pb-8">
@@ -72,7 +76,7 @@ if (!pageDescription) {
         posts.map((post: any, index: number) =>
           index > 0 || !showFeatured ? (
             <BlogEntry {...post.data} slug={post.id} />
-          ) : null
+          ) : null,
         )
       }
     </div>

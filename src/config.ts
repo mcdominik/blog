@@ -78,7 +78,7 @@ export const SHOW_IMAGES = true;
 export const POSTS_PER_PAGE = 8;
 
 // will be shown in the header, if left blank will instead show the SITE_TITLE
-export const SITE_NAME = "Dominik Labs";
+export const SITE_NAME = "Dominik Builds";
 
 // if true, will show the SITE_FAVICON in the header
 export const SHOW_FAVICON_IN_HEADER = true;
