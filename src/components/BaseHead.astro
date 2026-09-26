@@ -11,6 +11,7 @@ interface Props {
   pubDate?: Date;
   updatedDate?: Date;
   type?: "article" | "website";
+  noindex?: boolean;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -22,6 +23,7 @@ const {
   pubDate,
   updatedDate,
   type = "website",
+  noindex = false,
 } = Astro.props;
 
 const ogType = type === "article" ? "article" : "website";
@@ -81,6 +83,8 @@ const jsonLd =
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
+
+{noindex && <meta name="robots" content="noindex, follow" />}
 
 <!-- Primary Meta Tags -->
 <title>{type === "article" ? `${title} | ${siteName}` : title}</title>

@@ -55,7 +55,7 @@ if (!pageDescription) {
 }
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription}>
+<BaseLayout title={pageTitle} description={pageDescription} noindex={Boolean(tag)}>
   <Header active="blog" />
   <main class="max-w-2xl lg:max-w-3xl mx-auto mt-8 px-4">
     <ProseWrapper class="pb-8">

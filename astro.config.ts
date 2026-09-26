@@ -53,7 +53,7 @@ export default defineConfig({
     mdx(),
     sitemap({
       filter: (page) =>
-        !page.includes("/pages/") && !/\/tags\/.+\/\d+\/?$/.test(page),
+        !page.includes("/pages/") && !page.includes("/tags/"),
     }),
     tailwind(),
     svelte(),
