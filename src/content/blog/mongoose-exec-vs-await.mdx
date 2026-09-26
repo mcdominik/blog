@@ -1,0 +1,129 @@
+---
+title: "Mongoose exec() vs await: What's the Difference?"
+description: "Should you call exec() on Mongoose queries or just await them? Learn how Mongoose queries work, the difference in stack traces, and which to use."
+pubDate: "Feb 23 2026"
+published: false
+tags: ["tips", "JavaScript"]
+---
+
+## What is a Mongoose Query?
+
+When you write something like this in [Mongoose](https://mongoosejs.com/):
+
+```js
+const query = User.findOne();
+```
+
+You get back a Mongoose Query object. This object is **thenable**, but it is not a native Promise.
+
+\*thenable - it literally means object which has .then() method
+
+The Two Ways to Execute
+
+1. The "Explicit" Way (.exec())
+
+```js
+const users = User.findOne().exec();
+
+// check what we actually get..
+console.log(users);
+
+// it's just a pending promise:
+// Promise { <pending> }
+
+const users = await promise;
+
+// and awaited result
+// {
+//  _id: new ObjectId('699cb9cc169d3556d1218625'),
+//  name: 'John Pork',
+//  email: 'john@pork.com',
+//  age: 30,
+//  __v: 0
+// }
+```
+
+.exec() explicitly executes the query and returns a real, native Promise.
+
+2. The "Short" Way (Just await)
+
+```js
+const users = User.findOne();
+
+// check what we actually get
+console.log(users);
+
+// it's huuge Query object:
+// Query {
+//  _mongooseOptions: {},
+//  _transforms: [],
+//  _hooks: Kareem { _pres: Map(0) {}, _posts: Map(0) {} },
+//  _execCount: 0,
+//  mongooseCollection: Collection {
+//    collection: Collection { db: [Db], s: [Object], client: [MongoClient] },
+//    Promise: [Function: Promise],
+//    modelName: 'User',
+//    _closed: false,
+//    opts: {
+//        <...>
+
+const users = await promise;
+
+console.log(users);
+
+// and awaited results
+// {
+//  _id: new ObjectId('699cb9cc169d3556d1218625'),
+//  name: 'Jon Jones',
+//  email: 'jon@jones.com',
+//  age: 30,
+//  __v: 0
+// }
+```
+
+Because the Query object is thenable, await can trigger it directly. Mongoose internally calls .then() on the query, which executes it.
+
+## Mongoose exec() vs await: What's the Difference?
+
+At first glance it looks the same. But let’s dig deeper and look at **error stack traces**.
+
+When you use .exec(), Mongoose captures the stack trace at the point where .exec() is called, so when an error occurs, you see exactly where in your code the query was initiated.
+
+Without it, the stack trace often points deep into Mongoose internals, making debugging painful.
+
+```js
+const user = await User.findById(undefined);
+
+// without .exec() — what you actually see ⬇️
+
+MongooseError: Cast to ObjectId failed for value "undefined"
+    at model.Query.exec (/node_modules/mongoose/lib/query.js:4382:21)
+    at model.Query.then (/node_modules/mongoose/lib/query.js:4481:58)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+```
+
+```js
+const user = await User.findById(undefined).exec();
+
+// with .exec() — what you actually see ⬇️
+
+MongooseError: Cast to ObjectId failed for value "undefined"
+    at model.Query.exec (/node_modules/mongoose/lib/query.js:4382:21)
+    at getUser (/your-app/services/userService.js:42:45)   👈
+    at processUser (/your-app/controllers/userController.js:18:3)  👈
+    at Layer.handle (/node_modules/express/lib/router/layer.js:95:5)
+```
+
+It’s not a game changer, but it costs nothing and improves our logs.
+
+Performance remains the same - exec() doesn’t introduce any computational overhead.
+
+## TL;DR
+
+Mongoose team and most production codebases recommend always using .exec() for:
+
+- Cleaner debugging
+- Predictable Promise behavior
+- Explicit intent
+
+More JS/TS tips: [why you should stop using TypeScript enums](/posts/stop-using-typescript-enums/).

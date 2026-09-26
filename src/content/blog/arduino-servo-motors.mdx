@@ -1,6 +1,6 @@
 ---
-title: "Arduino with Servo Motors"
-description: "Run any servo motor with Arduino: safe external powering, sweep scripts, and potentiometer knob control."
+title: "Arduino Servo Motor Tutorial: Wiring, Power & Code"
+description: "Control any servo motor (SG90 to 30 kg) with Arduino: safe external power, wiring, PWM explained, sweep code, and potentiometer knob control."
 pubDate: "Jun 17 2026"
 published: true
 tags: ["electronics", "tutorial"]
@@ -8,7 +8,7 @@ tags: ["electronics", "tutorial"]
 
 https://youtu.be/1mDnaiEytAI
 
-## Overview
+## Arduino Servo Tutorial Overview
 
 In this tutorial, I demonstrate how to connect and program literally any servo motor using an Arduino. Whether you are using a tiny, popular SG90 or a powerful motor with 30 kg of torque, this guide covers both. We will look at safe powering methods, wiring configurations, how servos work under the hood using Pulse Width Modulation (PWM), and two essential code scripts: a basic sweep script and an analog potentiometer knob control.
 
@@ -75,7 +75,7 @@ Fortunately, the Arduino `Servo` library hides all these timing details.
 
 ---
 
-## Code Snippets
+## Arduino Servo Code Examples
 
 ### 1. Sweep Script
 This script sweeps the servo 180 degrees up and down continuously.
@@ -145,3 +145,5 @@ The `map()` function is extremely handy here: it converts the granularity of the
 ---
 
 More details and hardware demonstrations in the video!
+
+Want to show the servo angle on a screen? Check out my [Arduino OLED display tutorial](/posts/arduino-oled-display/).

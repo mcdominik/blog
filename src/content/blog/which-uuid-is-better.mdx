@@ -1,16 +1,16 @@
 ---
-title: "Which UUID should I use?"
-description: "How to choose the proper uuid for your use case? uuidv4 vs uuidv7 vs nanoID"
+title: "UUID v4 vs v7 vs Nano ID: Which Should You Use?"
+description: "Compare UUID v4, UUID v7 and Nano ID: database index performance, collision probability, and when to use each in Node.js."
 pubDate: "Feb 25 2026"
 published: true
 tags: ["tips", "JavaScript"]
 ---
 
-> ⚠️ Choosing the wrong one can hurt your database performance at scale.!
+> ⚠️ Choosing the wrong one can hurt your database performance at scale!
 
-## What is a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier)?
+## What is a UUID?
 
-**Universally Unique Identifier** (UUID) is a 128-bit number used (as the name suggests) to uniquely identify objects in distributed systems.
+**Universally Unique Identifier** ([UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier)) is a 128-bit number used (as the name suggests) to uniquely identify objects in distributed systems.
 
 There are currently eight versions, but I'm not going to go through all of them. Let’s focus on **v4** and **v7**, as they are the two most popular choices for production environments today.
 
@@ -49,7 +49,7 @@ They use **Cryptographically Secure Pseudorandom Number Generators ([CSPRNG](htt
 
 While UUID v7 replaces some random bits with a timestamp, it still leaves **74 bits of randomness** and that's for one millisecond space! Impossible to reach in real world systems.
 
-## Which one is better?
+## UUID v4 vs v7: Which One Is Better?
 
 Both are great, but **UUID v7** can offer better performance. Its time-sorted nature is a game-changer for high-performance database inserts (keeping the [B-tree](https://en.wikipedia.org/wiki/B-tree) index happy).
 
@@ -57,7 +57,7 @@ However, we are talking about scale here. If your table has fewer than 10M rows,
 
 ---
 
-## What about Nano ID?
+## What About Nano ID?
 
 If you've been around the JavaScript ecosystem, you’ve definitely run into **NanoID**. Here’s how they actually stack up:
 
@@ -73,10 +73,12 @@ However, most relational databases (like Postgres) have a native `UUID` data typ
 
 > **Rule of thumb:** If the ID is going in a URL, use **NanoID**.
 
-## TL;DR
+## TL;DR: Which UUID to Choose
 
 
 - **UUID v7** shines at scale; if your table is less than 10M rows, UUID v4 is just fine.
 - **Use UUID v7** for modern database primary keys (faster indexing).
 - **Use UUID v4** for zero-dependency apps. It’s built into the native crypto API.
 - **Use NanoID** for clean, user-friendly URLs.
+
+Designing a database schema? Also read [how to store money in a database](/posts/store-monetary-values/).

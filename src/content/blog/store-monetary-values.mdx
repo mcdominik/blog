@@ -1,6 +1,6 @@
 ---
-title: "How to store and handle monetary values?"
-description: "How to handle monetary values to save yourself from some headaches."
+title: "How to Store Money in a Database: Floats vs Cents vs DECIMAL"
+description: "Why you should never store money as float, and when to use integer cents or NUMERIC/DECIMAL in PostgreSQL and JavaScript."
 pubDate: "Jun 14 2026"
 published: true
 tags: ["tips", "JavaScript", "database"]
@@ -12,7 +12,7 @@ I'll spare you the details of this system, but it still lives in my head and rui
 I spent a lot of time tangling with LLMs that were trying to overengineer a solution for this problem.
 I'm writing this to save you some time, because the rules are pretty straightforward.
 
-## The floating-point trap
+## Why You Should Never Store Money as Float
 
 To start off, here is how you should `never` store monetary values: floats and doubles.
 
@@ -44,7 +44,7 @@ The outcome is the same because all of them are based on the IEEE 754 standard: 
 
 ![IEEE 754 standard](../../assets/posts/monetary/IEEE_754_Floating_Point.svg)
 
-## Option 1: Store as integers (cents)
+## Option 1: Store Money as Integers (Cents)
 
 If you are in the design phase, just pick integers. For example, store `$9.99` as `999` (cents).
 
@@ -52,7 +52,7 @@ It will make your life so much easier. Leading fintech companies use this patter
 
 If you go global, be careful because not all currencies follow the "100 cents = 1 dollar" rule. However, handling that is still much less overhead than dealing with floating-point inaccuracies.
 
-## Option 2: Use NUMERIC or DECIMAL
+## Option 2: Use NUMERIC or DECIMAL Columns
 
 This is a second good option. It requires less refactoring, so in my opinion, it's better for systems already in production (but it's not a rule, your system may be different!).
 
@@ -64,7 +64,7 @@ For example, `NUMERIC(10, 2)` allows you to store up to 10 digits in total, with
 
 Both `NUMERIC` and integer types solve the precision loss problem. But there is a catch if you are using JavaScript.
 
-## The JavaScript trap
+## The JavaScript Number Trap
 
 Let's say your database table stores `price` and `shipping_cost` (both as `NUMERIC`). You want to calculate the total price before billing the customer.
 
@@ -89,7 +89,7 @@ It's not the database fault. JavaScript only has one number type (`number`), whi
 
 And JavaScript is pretty liberal about string arithmetic, so `"99" + "10.99"` is `"9910.99"`.
 
-## How to fix it
+## How to Handle Money in JavaScript
 
 We could manually parse it and write our own wrappers. But unless you are counting every single kilobyte of your bundle size, there is no need to reinvent the wheel. There are already a couple of lightweight, battle-tested npm packages that solved this issue years ago, like `decimal.js`, `big.js`, or `bignumber.js`.
 
@@ -109,3 +109,5 @@ console.log(totalPrice.toString()); // '109.99'
 1. **NEVER** store monetary values as floats or doubles.
 2. Use **`NUMERIC` / `DECIMAL`** in your database, or use **integers** (storing cents instead of dollars).
 3. If you use `NUMERIC` / `DECIMAL` with JavaScript, watch out for string concatenation and **always** wrap your math operations using a library like `decimal.js` or custom parsing logic.
+
+Picking primary keys for the same tables? See [UUID v4 vs v7 vs Nano ID](/posts/which-uuid-is-better/).

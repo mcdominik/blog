@@ -8,7 +8,7 @@ tags: ["electronics", "tutorial"]
 
 https://youtu.be/___p9JYbTc0
 
-## Overview
+## Why Use an OLED Display with Arduino?
 
 If you want to add a user interface, display sensor data, or create custom animations, an **OLED Arduino display** is one of the most popular and versatile components you can use. 
 
@@ -34,6 +34,14 @@ Here is the standard I2C wiring pinout:
 - **SDA (Serial Data)** → Connect to Arduino **A4**
 
 *(Note: On standard Arduinos like the Uno and Nano, A4 and A5 are the dedicated I2C pins).*
+
+### Arduino Nano OLED Wiring Diagram
+
+![Arduino Nano to I2C OLED display wiring diagram (VCC, GND, SDA to A4, SCL to A5)](../../assets/posts/arduino/arduino-nano-oled-pinout.webp)
+
+### Arduino Uno OLED Wiring Diagram
+
+![Arduino Uno to I2C OLED display wiring diagram (VCC, GND, SDA to A4, SCL to A5)](../../assets/posts/arduino/arduino-uno-oled-pinout.webp)
 
 ## Arduino OLED Code: Displaying Basic Text
 
@@ -81,3 +89,42 @@ I wrote a custom Python script that easily converts any image into a C-array tha
 **Want to see exactly how to code the animations, draw complex shapes, and use the Python image converter? Watch the video at the top of the page for the full demonstration!**
 
 You can also find all the advanced code snippets in the [project repository here](https://github.com/mcdominik/source/tree/main/arduino/oled_tutorial).
+
+Want to make things move next? Check out my [Arduino servo motor tutorial](/posts/arduino-servo-motors/).
+
+## FAQ
+
+<details>
+<summary>Why is my Arduino OLED display blank?</summary>
+
+The most common cause is a wrong I2C address. Most displays use `0x3C`, but some use `0x3D`. Run the `i2c_scanner` sketch (File → Examples → Wire) to find the correct address. Also double-check that SDA goes to A4 and SCL to A5, and that you call `display.display()` after drawing.
+
+</details>
+
+<details>
+<summary>How do I find the I2C address of my OLED display?</summary>
+
+Upload the I2C scanner sketch and open the Serial Monitor. It will print the address of every connected I2C device. The address is sometimes also printed on the back of the display module.
+
+</details>
+
+<details>
+<summary>Should I power the OLED display from 3.3V or 5V?</summary>
+
+Most I2C OLED modules have an onboard voltage regulator and accept both. Use 3.3V on 3.3V boards (like the Nano 33 BLE Sense) and 5V on the Uno or classic Nano. If your module has no regulator, stick to 3.3V.
+
+</details>
+
+<details>
+<summary>Does the SSD1306 library work with SH1106 displays?</summary>
+
+For basic text and shapes, usually yes. The SH1106 has 132 columns of RAM instead of 128, so you may notice a 2-pixel offset or garbage on the edges. If that bothers you, use a dedicated SH1106 library such as `Adafruit SH110X` or `U8g2`.
+
+</details>
+
+<details>
+<summary>What is the difference between I2C and SPI OLED displays?</summary>
+
+I2C uses only two data wires (SDA and SCL) and is easier to wire. SPI uses more pins (MOSI, CLK, DC, CS, RST) but offers faster refresh rates, which matters for smooth animations.
+
+</details>

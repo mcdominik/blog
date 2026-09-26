@@ -1,6 +1,6 @@
 ---
-title: "TypeScript enums. Why you should stop using them?"
-description: "TypeScript enums vs literal types vs as const object"
+title: "TypeScript Enums vs Union Types vs as const: Stop Using Enums"
+description: "Why TypeScript enums cause problems and how string literal unions and as const objects give you the same type safety with zero runtime cost."
 pubDate: "Feb 21 2026"
 published: true
 tags: ["tips", "TypeScript"]
@@ -71,7 +71,7 @@ if (type === InternalWebhookTypes.FOREIGN_LINKED_BANK_ACCOUNT_PROFILE)
 
 Alternatives?
 
-## Literal types!
+## The Alternative: String Literal Union Types
 
 ```ts
 type Status = "active" | "disabled";
@@ -111,6 +111,8 @@ if (status !== "active") {
 - **`as const` array/object** → you need runtime access to all values (validation, UI lists, etc.).
 - **Enum** → mostly when working with external code that already uses them. Generally avoid otherwise.
 
-## TL;DR
+## TL;DR: Enums vs Union Types
 
 Enums aren't inherently bad, but replacing them with literal types or the `as const` array/object pattern provides the same benefits with smaller overhead.
+
+More JS/TS tips: [UUID v4 vs v7 vs Nano ID](/posts/which-uuid-is-better/).

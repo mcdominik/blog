@@ -9,6 +9,9 @@ const { class: className } = Astro.props;
   class:list={[
     "prose prose-img:rounded-xl dark:prose-invert prose-a:no-underline",
     "prose-inline-code:bg-base-100 dark:prose-inline-code:bg-base-800 prose-inline-code:p-1 prose-inline-code:rounded-md",
+    // FAQ accordion (native <details>)
+    "[&_details]:border-b [&_details]:border-base-300 dark:[&_details]:border-base-700 [&_details]:py-3",
+    "[&_summary]:cursor-pointer [&_summary]:font-semibold [&_summary]:text-base-900 dark:[&_summary]:text-base-100",
     colorBaseClasses[BASE_COLOR],
     colorAccentClasses[ACCENT_COLOR],
     className,
