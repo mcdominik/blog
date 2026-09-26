@@ -9,9 +9,6 @@ const { class: className } = Astro.props;
   class:list={[
     "prose prose-img:rounded-xl dark:prose-invert prose-a:no-underline",
     "prose-inline-code:bg-base-100 dark:prose-inline-code:bg-base-800 prose-inline-code:p-1 prose-inline-code:rounded-md",
-    // FAQ accordion (native <details>)
-    "[&_details]:border-b [&_details]:border-base-300 dark:[&_details]:border-base-700 [&_details]:py-3",
-    "[&_summary]:cursor-pointer [&_summary]:font-semibold [&_summary]:text-base-900 dark:[&_summary]:text-base-100",
     colorBaseClasses[BASE_COLOR],
     colorAccentClasses[ACCENT_COLOR],
     className,
@@ -19,3 +16,189 @@ const { class: className } = Astro.props;
 >
   <slot />
 </div>
+
+<style is:global>
+  /* FAQ / Accordion (<details>) styling & animations */
+  .prose details {
+    @apply border-b border-base-300 dark:border-base-700 py-0 overflow-hidden;
+    transition: border-color 0.2s ease;
+  }
+
+  /* Add top border to the first details in an accordion group */
+  .prose details:not(details + details) {
+    @apply border-t border-base-300 dark:border-base-700;
+  }
+
+  .prose details > summary {
+    @apply flex items-center justify-between gap-4 py-3.5 px-1 cursor-pointer font-semibold text-base-900 dark:text-base-100 select-none;
+    list-style: none;
+  }
+
+  .prose details > summary::-webkit-details-marker,
+  .prose details > summary::marker {
+    display: none;
+    content: "";
+  }
+
+  .prose details > summary:focus-visible {
+    @apply outline-none ring-2 ring-base-400 dark:ring-base-600 rounded-md;
+  }
+
+  /* Smooth rotating chevron icon */
+  .prose details > summary::after {
+    content: "";
+    display: inline-block;
+    width: 1.15rem;
+    height: 1.15rem;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z' clip-rule='evenodd' /%3E%3C/svg%3E") no-repeat center / contain;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z' clip-rule='evenodd' /%3E%3C/svg%3E") no-repeat center / contain;
+    opacity: 0.5;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  }
+
+  .prose details:hover > summary::after {
+    opacity: 0.85;
+  }
+
+  .prose details[open] > summary::after {
+    transform: rotate(180deg);
+    opacity: 1;
+  }
+
+  .prose details.is-closing > summary::after {
+    transform: rotate(0deg);
+    opacity: 0.5;
+  }
+
+  /* Smooth fade & slight translate for content */
+  .prose details > :not(summary) {
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  }
+
+  .prose details:not([open]) > :not(summary) {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  .prose details.is-closing > :not(summary) {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  .prose details[open]:not(.is-closing) > :not(summary) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Spacing for markdown content inside details */
+  .prose details > :not(summary):first-of-type {
+    margin-top: 0.25rem;
+  }
+
+  .prose details > :not(summary):last-child {
+    margin-bottom: 1rem;
+  }
+</style>
+
+<script>
+  function setupDetailsAnimation() {
+    const detailsElements = document.querySelectorAll<HTMLDetailsElement>(".prose details");
+
+    detailsElements.forEach((details) => {
+      if (details.dataset.accordionInit === "true") return;
+      details.dataset.accordionInit = "true";
+
+      const summary = details.querySelector("summary");
+      if (!summary) return;
+
+      let animation: Animation | null = null;
+      let isClosing = false;
+      let isExpanding = false;
+
+      summary.addEventListener("click", (e) => {
+        if ((e.target as HTMLElement).closest("a")) return;
+
+        e.preventDefault();
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          details.open = !details.open;
+          return;
+        }
+
+        if (isClosing || !details.open) {
+          open();
+        } else if (isExpanding || details.open) {
+          shrink();
+        }
+      });
+
+      function shrink() {
+        isClosing = true;
+        details.classList.add("is-closing");
+
+        const startHeight = `${details.offsetHeight}px`;
+        const endHeight = `${summary!.offsetHeight}px`;
+
+        if (animation) animation.cancel();
+
+        animation = details.animate(
+          {
+            height: [startHeight, endHeight],
+          },
+          {
+            duration: 220,
+            easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+          }
+        );
+
+        animation.onfinish = () => onAnimationFinish(false);
+        animation.oncancel = () => {
+          isClosing = false;
+        };
+      }
+
+      function open() {
+        details.style.height = `${details.offsetHeight}px`;
+        details.open = true;
+        details.classList.remove("is-closing");
+
+        window.requestAnimationFrame(() => {
+          isExpanding = true;
+          const startHeight = `${details.offsetHeight}px`;
+          const endHeight = `${details.scrollHeight}px`;
+
+          if (animation) animation.cancel();
+
+          animation = details.animate(
+            {
+              height: [startHeight, endHeight],
+            },
+            {
+              duration: 260,
+              easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+            }
+          );
+
+          animation.onfinish = () => onAnimationFinish(true);
+          animation.oncancel = () => {
+            isExpanding = false;
+          };
+        });
+      }
+
+      function onAnimationFinish(open: boolean) {
+        details.open = open;
+        animation = null;
+        isClosing = false;
+        isExpanding = false;
+        details.style.height = "";
+        details.classList.remove("is-closing");
+      }
+    });
+  }
+
+  setupDetailsAnimation();
+  document.addEventListener("astro:page-load", setupDetailsAnimation);
+</script>
