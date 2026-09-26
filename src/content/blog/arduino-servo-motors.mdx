@@ -1,5 +1,5 @@
 ---
-title: "Arduino Servo Motor Tutorial: Wiring, Power & Code"
+title: "Arduino servo motor tutorial: wiring, power, and code"
 description: "Control any servo motor with Arduino: safe external power, wiring, PWM explained, sweep code, and potentiometer knob control."
 pubDate: "Jun 17 2026"
 published: true
@@ -8,142 +8,215 @@ tags: ["electronics", "tutorial"]
 
 https://youtu.be/1mDnaiEytAI
 
-## Arduino Servo Tutorial Overview
+## Overview
 
-In this tutorial, I demonstrate how to connect and program literally any servo motor using an Arduino. Whether you are using a tiny, popular SG90 or a powerful motor with 30 kg of torque, this guide covers both. We will look at safe powering methods, wiring configurations, how servos work under the hood using Pulse Width Modulation (PWM), and two essential code scripts: a basic sweep script and an analog potentiometer knob control.
+Learn how to connect and program any standard servo motor using an Arduino. Whether you are using a compact SG90 micro servo or a high-torque 30 kg metal-gear motor, the control principles remain the same. This guide covers safe power wiring, wire color schemes, pulse width modulation (PWM) fundamentals, and two core code examples: an automated sweep script and analog knob control with a potentiometer.
 
-In the accompanying video, I walk you through:
+Key topics covered:
 
-- **Safe Powering**: Why direct connection is risky and how to wire an external power supply.
-- **Wire Color Codes**: SG90 vs. other manufacturers.
-- **PWM Theory**: Understanding pulse width modulation.
-- **Sweep Script**: Moving the servo up and down.
-- **Knob Control**: Mapping a potentiometer dial to servo angles.
-- **Capacitor Trick**: Reducing noise and stabilizing power.
+- **Safe powering** – why direct microcontroller power risks brownouts, and how to wire an external power supply.
 
-## Safe Powering: Direct vs. External Power
+- **Wire color codes** – standard pinouts across major servo manufacturers.
 
-The most important topic when working with motors is power:
+- **PWM fundamentals** – how duty cycles translate into rotational shaft positions.
 
-> ⚠️
-> I always recommend using an **external power supply** for your servos. Motors (especially in stall/load mode) can draw a very large amount of current.
+- **Sweep script** – moving the servo back and forth across its travel limits.
+
+- **Knob control** – mapping an analog potentiometer to real-time servo positions.
+
+- **Capacitor decoupling** – eliminating voltage dips and unwanted motor jitter.
+
+---
+
+## Safe powering: direct vs. external power
+
+Power distribution is the most critical factor when working with servo motors.
+
+> **Warning:** Always use a dedicated external power supply for your servo motors. Electric motors draw substantial current spikes when starting or under mechanical load.
 >
-> Even tiny servos like the SG90 can draw **0.5A to 0.8A** in stall mode. If you power them directly from the Arduino board, this high current can cause voltage drops, causing the Arduino to twitch and suddenly reset. It can even restart your computer's USB port or laptop, especially with older USB 2.0 ports that are limited to 0.5A.
+> Even a micro servo like the SG90 draws 0.5 A to 0.8 A at stall. Drawing that current directly from the Arduino 5V pin causes severe voltage dips, triggering the board's brownout detector and forcing an unexpected reboot. On older computers, it can even cause the host USB port to shut down.
 
-For larger servos, or to make your setup safe and stable, connect the servo's power directly to an external power supply (typically 5V or 6V depending on the motor specs) and only share the ground (GND) pin with the Arduino.
+For reliable operation, connect the servo power line directly to an external power supply (typically 5 V or 6 V, matching your motor specifications). Connect the power supply ground to the Arduino ground to establish a shared electrical reference.
 
-### Wire Color Codes
+### Wire color codes
 
-Different manufacturers use different wire color schemes:
+Hobby servo manufacturers generally follow one of two common wiring conventions:
 
-| Connection | SG90 (typical) | Readytosky (typical) |
+| Connection | SG90 / Tower Pro style | Readytosky / Futaba style |
 | :--- | :--- | :--- |
-| **Power (VCC)** | Red | Red |
-| **Ground (GND)** | Brown | Black |
-| **Signal (PWM)** | Orange | White |
+| Power (VCC) | Red | Red |
+| Ground (GND) | Brown | Black |
+| Signal (PWM) | Orange | White |
 
-*Always double-check your servo's datasheet before connecting.*
-
----
-
-## Wiring Guide
-
-### 1. The Risky Direct Method (Prototyping Only)
-*Use at your own risk for a single small, unloaded SG90:*
-- **VCC** → Arduino **5V**
-- **GND** → Arduino **GND**
-- **Signal** → Arduino **D9** (or any digital pin)
-
-### 2. The Safe Method (Recommended)
-*Connects the servo to an external power supply:*
-- **Servo Power** → External Power **5V**
-- **Servo GND** → External Power **GND** and Arduino **GND** (Common Ground)
-- **Servo Signal** → Arduino **D9**
-
-> 💡
-> To stabilize the power supply and reduce electrical noise that causes twitching, place a capacitor (e.g. 100µF or larger) between the servo's ground and power rails.
+Always verify your servo's pinout in its datasheet before applying power.
 
 ---
 
-## How it works: Pulse Width Modulation (PWM)
+## Wiring guide
 
-You might think that the Arduino sends a command like "go to 90 degrees" over the wire. It doesn't. It sends a heartbeat signal called **PWM (Pulse Width Modulation)**.
+### Option 1: Direct wiring (bench testing only)
 
-Microcontrollers can only output digital signals: either high (3.3V/5V) or low (0V). PWM is a technique that fakes an analog result by switching the switch on and off extremely fast. In the servo domain, the width of the pulse tells the servo's internal gears and controller where to point.
+Use this method only for a single unloaded micro servo during brief bench tests:
 
-Fortunately, the Arduino `Servo` library hides all these timing details.
+- VCC to Arduino 5V
+- GND to Arduino GND
+- Signal to Arduino pin 9 (or any digital pin)
+
+### Option 2: External power wiring (recommended)
+
+Use this method for all production projects, loaded motors, and multi-servo setups:
+
+- Servo power (VCC) to external power supply (+5V or +6V)
+- Servo GND to external power supply GND and Arduino GND (common ground)
+- Servo signal to Arduino pin 9
+
+> **Tip:** Add an electrolytic capacitor (100 µF to 470 µF) directly across the servo power and ground rails near the motor. The capacitor acts as a local energy reservoir, smoothing out inductive spikes and preventing jitter.
 
 ---
 
-## Arduino Servo Code Examples
+## How pulse width modulation (PWM) works
 
-### 1. Sweep Script
-This script sweeps the servo 180 degrees up and down continuously.
+Servos do not receive discrete digital packets or varying DC voltage levels. Instead, the microcontroller sends a repetitive square-wave signal known as **pulse width modulation (PWM)**.
+
+A standard hobby servo expects a 50 Hz control signal, which corresponds to a 20 ms pulse period. The duration of the high pulse dictates the target position of the output shaft:
+
+- **1.0 ms pulse** – positions the servo at 0 degrees.
+- **1.5 ms pulse** – centers the servo at 90 degrees.
+- **2.0 ms pulse** – positions the servo at 180 degrees.
+
+The Arduino `Servo` library abstracts these pulse-timing details, allowing you to write target positions directly in degrees.
+
+---
+
+## Arduino servo code examples
+
+### 1. Sweep script
+
+This script sweeps the servo across its full 180-degree range in a continuous loop.
 
 ```cpp
 #include <Servo.h>
 
-Servo myServo;  // Create a servo object
-int pos = 0;    // Variable to store the servo position
+Servo myServo;
+int pos = 0;
 
 void setup() {
-  myServo.attach(9);  // Attaches the servo on pin 9
+  myServo.attach(9);
 }
 
 void loop() {
   // Sweep from 0 to 180 degrees
   for (pos = 0; pos <= 180; pos += 1) {
-    myServo.write(pos);              // Update servo position
-    delay(15);                       // Give the gears time to catch up
+    myServo.write(pos);
+    delay(15);  // Allow physical gearbox time to reach the target angle
   }
-  
+
   // Sweep back from 180 to 0 degrees
   for (pos = 180; pos >= 0; pos -= 1) {
-    myServo.write(pos);              // Update servo position
-    delay(15);                       // Give the gears time to catch up
+    myServo.write(pos);
+    delay(15);  // Allow physical gearbox time to reach the target angle
   }
 }
 ```
 
-> 📝
-> The `delay(15);` is crucial. The Arduino processor is extremely fast, executing millions of instructions per second. The delay gives the physical gears time to catch up to the code. Without it, the Arduino would command the sweep in a fraction of a millisecond, and the servo would just buzz or jitter.
+> **Note:** The `delay(15)` call is essential. Microcontrollers execute instructions in nanoseconds, but mechanical gears require tens of milliseconds to physically transit between angles. Removing the delay causes the motor to buzz or stutter in place.
 
-> 📢
-> The `Servo` library uses default pulse width limits (in microseconds). For some servos, these default values may limit the range of motion. In such cases, you can manually adjust them when attaching the pin:
-> `myServo.attach(pin, minMicros, maxMicros);`
+If your servo does not reach its full physical range with the default timings (544 µs to 2400 µs), define explicit pulse limits when attaching the pin:
 
-### 2. Knob Control Script
-This script allows you to control the servo position manually using a potentiometer.
+```cpp
+myServo.attach(9, 500, 2500);
+```
 
-#### Potentiometer Wiring:
-- **Left Leg** → Common Ground
-- **Middle Leg (Wiper)** → Arduino **A0** (Analog Pin)
-- **Right Leg** → Arduino **3.3V** *(Note: Connect to 3.3V, not 5V, to keep the analog pin reading safe and aligned with standard reference voltages).*
+### 2. Knob control with a potentiometer
+
+This script enables you to control the servo angle manually using an analog potentiometer.
+
+#### Potentiometer wiring
+
+- Left pin to common ground (GND)
+- Center pin (wiper) to Arduino analog pin A0
+- Right pin to Arduino 5V (use 3.3V on 3.3V boards to avoid over-voltage)
 
 ```cpp
 #include <Servo.h>
 
-Servo myServo;  // Create a servo object
+Servo myServo;
 
-const int potPin = A0;  // Analog pin connected to potentiometer
-int val;                // Variable to read the value
+const int potPin = A0;
+int val;
 
 void setup() {
-  myServo.attach(9);    // Attaches the servo on pin 9
+  myServo.attach(9);
 }
 
 void loop() {
-  val = analogRead(potPin);            // Read potentiometer (0 to 1023)
-  val = map(val, 0, 1023, 0, 180);     // Map the 10-bit analog range to angles (0 to 180)
-  myServo.write(val);                  // Write the position to the servo
-  delay(15);                           // Delay to let the servo move
+  val = analogRead(potPin);            // Read 10-bit analog voltage (0 to 1023)
+  val = map(val, 0, 1023, 0, 180);     // Scale analog range to degrees (0 to 180)
+  myServo.write(val);
+  delay(15);                           // Allow physical motor to settle
 }
 ```
 
-The `map()` function is extremely handy here: it converts the granularity of the Arduino's 10-bit analog pin (2^10 = 1024 values) to a standard 0 to 180-degree angle.
+The `map()` function scales the Arduino 10-bit analog-to-digital converter (ADC) reading (`0` to `1023`) to a valid angular position (`0` to `180` degrees).
+
+To display the current servo angle on an external screen, see the [Arduino OLED display guide](/posts/arduino-oled-display/).
+
+<a href="https://coff.ee/dominikbuilds" target="_blank" rel="noopener noreferrer">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 54px; width: auto;" />
+</a>
 
 ---
 
-More details and hardware demonstrations in the video!
+## FAQ and troubleshooting
 
-Want to show the servo angle on a screen? Check out my [Arduino OLED display tutorial](/posts/arduino-oled-display/).
+<details>
+<summary>Why is my servo twitching or jittering?</summary>
+
+Servo jitter is almost always caused by an inadequate or noisy power supply. When a servo motor moves, it draws sharp current spikes that cause voltage drops across the power rail. To resolve jitter:
+
+- Power the servo using an external 5 V or 6 V power source instead of the Arduino 5V pin.
+
+- Place an electrolytic capacitor (100 µF to 470 µF) across the servo power (+ and -) rails.
+
+- Ensure software libraries that disable interrupts (such as `SoftwareSerial`) are not interrupting the hardware timer used by the `Servo` library.
+
+</details>
+
+<details>
+<summary>Why does my Arduino reset every time the servo moves?</summary>
+
+When a motor initiates movement or encounters mechanical resistance, it draws stall current (between 0.5 A and 1.5 A depending on the model). The Arduino onboard voltage regulator and standard computer USB ports cannot supply this instantaneous current. The resulting voltage sag triggers the microcontroller's internal brownout detector, restarting the board. Supplying power through an external supply with a shared ground solves this issue.
+
+</details>
+
+<details>
+<summary>Can I connect a servo motor to any Arduino pin?</summary>
+
+Yes. Unlike `analogWrite()`, which requires dedicated hardware PWM pins marked with a tilde `~` (pins 3, 5, 6, 9, 10, and 11 on the Uno), the Arduino `Servo` library generates PWM pulses in software backed by internal hardware timers (Timer1 on the Uno and Nano). You can connect a servo signal line to any standard digital pin or analog pin configured as an output.
+
+</details>
+
+<details>
+<summary>Why isn't my servo turning the full 180 degrees?</summary>
+
+The default pulse width range in the Arduino `Servo` library spans from 544 µs (0°) to 2400 µs (180°). Budget and aftermarket servos often use wider timing windows (such as 500 µs to 2500 µs) to reach their mechanical stops. Calibrate the travel limits by passing minimum and maximum microsecond values to `attach()`:
+
+`myServo.attach(pin, 500, 2500);`
+
+</details>
+
+<details>
+<summary>Why do I need a common ground (GND) with an external power supply?</summary>
+
+Voltage is a relative difference in electrical potential measured against ground (0 V). The Arduino outputs control pulses with high and low voltages referenced to its own GND pin. If the external power supply and the Arduino do not share a common ground line, there is no common reference point. The servo cannot reliably measure pulse transitions, leading to erratic twitching or zero response.
+
+</details>
+
+<details>
+<summary>What is the difference between a standard 180° servo and a continuous rotation servo?</summary>
+
+A standard servo moves to and holds a specific angular position between 0° and 180°. A continuous rotation (360°) servo replaces the internal position potentiometer with fixed resistors, turning the device into a variable-speed bi-directional motor. In code, `write(90)` halts motor rotation, while values closer to 0° or 180° dictate rotational speed and direction.
+
+</details>
+
+

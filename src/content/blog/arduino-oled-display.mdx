@@ -1,6 +1,6 @@
 ---
-title: "Arduino OLED Display Tutorial (Wiring & Code)"
-description: "Learn how to connect and program an OLED Arduino display. Complete guide covering I2C wiring, Adafruit SSD1306 code snippets, text, and bitmap graphics."
+title: "Arduino OLED display tutorial: wiring, setup, and code"
+description: "Connect and program an I2C OLED display with Arduino: wiring pinouts, Adafruit SSD1306 library setup, text rendering, shapes, and bitmap graphics."
 pubDate: "May 22 2025"
 published: true
 tags: ["electronics", "tutorial"]
@@ -8,48 +8,69 @@ tags: ["electronics", "tutorial"]
 
 https://youtu.be/___p9JYbTc0
 
-## Why Use an OLED Display with Arduino?
+## Overview
 
-If you want to add a user interface, display sensor data, or create custom animations, an **OLED Arduino display** is one of the most popular and versatile components you can use. 
+Monochrome 0.96-inch OLED displays are among the most versatile components for Arduino projects. With high contrast, wide viewing angles, and low power consumption, they provide an ideal user interface for sensor readouts, status dashboards, and menus.
 
-In this guide, I'll walk you through everything you need to know about setting up an OLED display with an Arduino, including how to draw basic text, geometric shapes, and scrolling animations. For the complete visual walkthrough and advanced bitmap image rendering, be sure to check out the accompanying video above!
+This tutorial covers the complete setup process for I2C-based OLED screens: identifying display controller hardware, wiring to Arduino Uno and Nano boards, installing necessary libraries, and rendering text, shapes, and bitmap images.
 
-## Understanding Your OLED Arduino Display
+Key topics covered:
 
-Before wiring anything, it's important to understand the hardware you are working with. There are a few common points of confusion:
+- **Hardware identification** – distinguishing I2C from SPI modules and SSD1306 from SH1106 controllers.
 
-- **3.3V vs 5V Logic:** Most of these displays can tolerate both 3.3V and 5V, so powering them is usually straightforward.
-- **I2C vs SPI Communication:** Check the pins on your display. If your OLED has `SCL` and `SDA` pins, it uses **I2C**. If you see pins labeled `DC` or `CS`, it uses **SPI**. In this tutorial, we are focusing on the highly popular I2C version.
-- **SSD1306 vs SH1106 Drivers:** Displays might look identical but use different drivers. I am using an SH1106 driver, but it runs perfectly fine using the standard SSD1306 library. Just keep in mind that the SH1106 has a 132-column wide RAM, while the SSD1306 is 128 columns wide. For basic text, it doesn't matter, but it's worth noting for precise animations.
+- **I2C wiring** – connecting power, ground, SDA, and SCL lines correctly.
 
-## Wiring the OLED Display to your Arduino
+- **Library setup** – installing Adafruit GFX and Adafruit SSD1306.
 
-For this project, I am using an [Arduino Nano 33 BLE Sense](https://docs.arduino.cc/hardware/nano-33-ble-sense/), but the wiring is exactly the same for the classic Arduino Uno or standard Arduino Nano.
+- **Text rendering** – initializing the display buffer and printing custom text.
 
-Here is the standard I2C wiring pinout:
+- **Graphics and bitmaps** – drawing geometric shapes, activating hardware scrolling, and rendering custom icons.
 
-- **VCC** → Connect to 3.3V (or 5V depending on your board/display specs)
-- **GND** → Connect to Ground
-- **SCL (Serial Clock)** → Connect to Arduino **A5**
-- **SDA (Serial Data)** → Connect to Arduino **A4**
+---
 
-*(Note: On standard Arduinos like the Uno and Nano, A4 and A5 are the dedicated I2C pins).*
+## Understanding your OLED display
 
-### Arduino Nano OLED Wiring Diagram
+Before wiring the display, confirm three hardware specifications:
 
-![Arduino Nano to I2C OLED display wiring diagram (VCC, GND, SDA to A4, SCL to A5)](../../assets/posts/arduino/arduino-nano-oled-pinout.webp)
+- **3.3V vs. 5V logic** – most breakout modules include an onboard low-dropout (LDO) regulator and level shifter, allowing safe operation at both 3.3 V and 5 V. Always verify your specific board specs before powering.
 
-### Arduino Uno OLED Wiring Diagram
+- **I2C vs. SPI communication** – check the pin header on your board. If it has four pins labeled `GND`, `VCC`, `SCL`, and `SDA`, it uses the I2C bus. Modules with six or seven pins (labeled `CS`, `DC`, `MOSI`, `CLK`) use SPI. This guide focuses on the 4-pin I2C version.
 
-![Arduino Uno to I2C OLED display wiring diagram (VCC, GND, SDA to A4, SCL to A5)](../../assets/posts/arduino/arduino-uno-oled-pinout.webp)
+- **SSD1306 vs. SH1106 controller chips** – modules look identical from the front, but may use either an SSD1306 or SH1106 driver IC. The SSD1306 uses a 128×64 internal RAM buffer, while the SH1106 uses a 132×64 buffer. For basic text, the `Adafruit_SSD1306` library works on both, though SH1106 displays may show a small 2-pixel margin offset.
 
-## Arduino OLED Code: Displaying Basic Text
+---
 
-To get the display running, you first need to install two core libraries in your Arduino IDE:
-1. `Adafruit GFX Library`
-2. `Adafruit SSD1306`
+## Wiring the OLED display to an Arduino
 
-Once installed, here is the basic code snippet to initialize the display and print your first text:
+The wiring shown below uses an [Arduino Nano 33 BLE Sense](https://docs.arduino.cc/hardware/nano-33-ble-sense/), but the pin connections are identical on the classic Arduino Uno and standard Arduino Nano.
+
+Standard I2C pin mapping:
+
+- VCC to 3.3V or 5V (matches the logic voltage of your microcontroller)
+- GND to Arduino GND
+- SCL (serial clock) to Arduino pin A5
+- SDA (serial data) to Arduino pin A4
+
+> **Note:** On standard ATmega328P boards (Uno and Nano), pins A4 (SDA) and A5 (SCL) are hardware-wired to the internal I2C bus. On boards with separate SDA and SCL header pins above digital pin 13, those pins connect internally to the same A4 and A5 lines.
+
+### Arduino Nano wiring diagram
+
+![Arduino Nano connected to an I2C OLED display with SDA on A4 and SCL on A5](../../assets/posts/arduino/arduino-nano-oled-pinout.webp)
+
+### Arduino Uno wiring diagram
+
+![Arduino Uno connected to an I2C OLED display with SDA on A4 and SCL on A5](../../assets/posts/arduino/arduino-uno-oled-pinout.webp)
+
+---
+
+## Displaying text with Adafruit SSD1306
+
+To control the display, install two libraries using the Arduino IDE Library Manager (**Tools** > **Manage Libraries...**):
+
+1. **Adafruit GFX Library** – provides core graphics primitives (lines, circles, text rendering).
+2. **Adafruit SSD1306** – handles hardware-level display communication and buffer management.
+
+Once installed, upload the following sketch to initialize the screen and print text:
 
 ```cpp
 #include <Wire.h>
@@ -59,17 +80,20 @@ Once installed, here is the basic code snippet to initialize the display and pri
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
+// Initialize the display with -1 if the module does not have a dedicated reset pin
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-
 void setup() {
-  // 0x3C is default i2c adress in some cases MAY be different
+  // 0x3C is the standard I2C address for most 128x64 OLED modules
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
+
   display.setTextSize(2);
-  display.setTextColor(WHITE);
+  display.setTextColor(SSD1306_WHITE);
   display.setCursor(10, 10);
   display.println("Subscribe");
+
+  // Push the internal buffer to the physical screen
   display.display();
 }
 
@@ -77,58 +101,70 @@ void loop() {
 }
 ```
 
-## Advanced: Scrolling, Shapes, and Custom Bitmaps
+> **Note:** The Adafruit library renders all text and shapes into an internal RAM buffer on the Arduino. You must call `display.display()` after drawing operations to push that buffer over I2C to the OLED controller.
 
-The `Adafruit_GFX` library makes it incredibly easy to do much more than just print text:
-- **Scrolling:** You can trigger built-in hardware scrolling using methods like `display.startscrollright(0x00, 0x0F)`.
-- **Shapes:** Drawing triangles, circles, and lines only takes a single function call (e.g., `display.drawTriangle(...)`).
-- **Custom Images:** You can display your own logos and graphics by converting normal photos into 1-bit monochrome byte arrays. 
+---
 
-I wrote a custom Python script that easily converts any image into a C-array that the Arduino can render using `display.drawBitmap()`. 
+## Hardware scrolling, shapes, and bitmap graphics
 
-**Want to see exactly how to code the animations, draw complex shapes, and use the Python image converter? Watch the video at the top of the page for the full demonstration!**
+The `Adafruit_GFX` library enables graphics operations beyond basic text strings:
 
-You can also find all the advanced code snippets in the [project repository here](https://github.com/mcdominik/source/tree/main/arduino/oled_tutorial).
+- **Hardware scrolling** – activate smooth horizontal or diagonal scrolling with `display.startscrollright(0x00, 0x0F)` without continuous CPU rendering.
 
-Want to make things move next? Check out my [Arduino servo motor tutorial](/posts/arduino-servo-motors/).
+- **Geometric primitives** – draw rectangles, rounded boxes, circles, and triangles using functions like `display.drawTriangle(...)` and `display.fillCircle(...)`.
+
+- **Monochrome bitmap graphics** – render logos, custom icons, and sensor graphs by converting images into 1-bit monochrome byte arrays and rendering them with `display.drawBitmap()`.
+
+Download all example sketches and the Python bitmap conversion script from the [GitHub project repository](https://github.com/mcdominik/source/tree/main/arduino/oled_tutorial).
+
+To control physical motion alongside visual feedback, see the [Arduino servo motor tutorial](/posts/arduino-servo-motors/).
 
 <a href="https://coff.ee/dominikbuilds" target="_blank" rel="noopener noreferrer">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 54px; width: auto;" />
 </a>
 
-## FAQ
+---
+
+## FAQ and troubleshooting
 
 <details>
 <summary>Why is my Arduino OLED display blank?</summary>
 
-The most common cause is a wrong I2C address. Most displays use `0x3C`, but some use `0x3D`. Run the `i2c_scanner` sketch (File → Examples → Wire) to find the correct address. Also double-check that SDA goes to A4 and SCL to A5, and that you call `display.display()` after drawing.
+A blank screen is almost always caused by an incorrect I2C address or a missing `display.display()` call. Most modules use address `0x3C`, while some use `0x3D`.
+
+To find the address:
+- Open the built-in I2C scanner via **File** > **Examples** > **Wire** > **i2c_scanner**.
+- Run the sketch and check the Serial Monitor for detected device addresses.
+- Verify SDA connects to A4 and SCL connects to A5.
+- Ensure your code calls `display.display()` after writing to the buffer.
 
 </details>
 
 <details>
 <summary>How do I find the I2C address of my OLED display?</summary>
 
-Upload the I2C scanner sketch and open the Serial Monitor. It will print the address of every connected I2C device. The address is sometimes also printed on the back of the display module.
+Upload the standard Arduino I2C scanner sketch and open the Serial Monitor at 9600 baud. The scanner interrogates every address on the bus and reports responding devices. Many breakout boards also print the default address or show a solder jumper label on the back PCB.
 
 </details>
 
 <details>
 <summary>Should I power the OLED display from 3.3V or 5V?</summary>
 
-Most I2C OLED modules have an onboard voltage regulator and accept both. Use 3.3V on 3.3V boards (like the Nano 33 BLE Sense) and 5V on the Uno or classic Nano. If your module has no regulator, stick to 3.3V.
+Most 4-pin I2C modules include an onboard 662K voltage regulator that accepts 3.3 V to 5 V. Connect VCC to 3.3V when using 3.3V microcontrollers (such as the Nano 33 BLE Sense or ESP32) and to 5V when using 5V boards (such as the Uno or classic Nano). If your module lacks an onboard regulator, supply strictly 3.3V.
 
 </details>
 
 <details>
 <summary>Does the SSD1306 library work with SH1106 displays?</summary>
 
-For basic text and shapes, usually yes. The SH1106 has 132 columns of RAM instead of 128, so you may notice a 2-pixel offset or garbage on the edges. If that bothers you, use a dedicated SH1106 library such as `Adafruit SH110X` or `U8g2`.
+The SSD1306 library works for basic text on SH1106 displays, but the SH1106 contains a 132-column RAM buffer instead of 128 columns. This mismatch can produce a 2-pixel vertical shift or random noise artifacts along screen borders. If this occurs, switch to a driver library designed for the SH1106 controller, such as `Adafruit SH110X` or `U8g2`.
 
 </details>
 
 <details>
 <summary>What is the difference between I2C and SPI OLED displays?</summary>
 
-I2C uses only two data wires (SDA and SCL) and is easier to wire. SPI uses more pins (MOSI, CLK, DC, CS, RST) but offers faster refresh rates, which matters for smooth animations.
+I2C requires only two signal pins (SDA and SCL), making wiring straightforward and leaving other pins free for sensors. SPI requires four or five signal pins (MOSI, CLK, DC, CS, and reset) but transfers data at much higher clock rates, enabling smoother animations and faster refresh cycles.
 
 </details>
+
