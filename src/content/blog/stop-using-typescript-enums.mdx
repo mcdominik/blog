@@ -1,23 +1,22 @@
 ---
-title: "TypeScript Enums vs Union Types vs as const: Stop Using Enums"
-description: "Why TypeScript enums cause problems and how string literal unions and as const objects give you the same type safety with zero runtime cost."
+title: "TypeScript enums vs. union types vs. as const: Stop using enums"
+description: "Why TypeScript enums cause problems, and how string literal unions and as const arrays give you the same type safety with zero runtime cost."
 pubDate: "Feb 21 2026"
 published: true
 tags: ["tips", "TypeScript"]
 ---
 
-## What are enums and why do we use them?
+## Why enums exist
 
-Is there anything wrong with the snippet below?
+Is there anything wrong with this snippet?
 
 ```ts
-// typo-prone code
 if (status !== "active") {
   await sendActivationEmail();
 }
 ```
 
-A small typo is enough, and our active users will get flooded with activation emails. Not very professional.
+It works, but one typo is enough to flood your active users with activation emails:
 
 ```ts
 // oops!
@@ -26,7 +25,7 @@ if (status !== "activr") {
 }
 ```
 
-And here comes the enum, saving the day!
+Enums fix this. The compiler rejects `Status.Activr`, so the typo never ships:
 
 ```ts
 enum Status {
@@ -39,13 +38,15 @@ if (status !== Status.Active) {
 }
 ```
 
-Looks nice. But it introduces unnecessary complexity.
+Looks nice, but it adds complexity you don't need.
 
-- The "enum footprint" follows us everywhere, we have to import it in every file where we operate on the variable.
-- After transpilation (TypeScript → JavaScript), it generates additional JavaScript (extra bundle size):
+## What's wrong with enums
+
+- **Imports everywhere** – every file that touches the value has to import the enum.
+
+- **Extra JavaScript** – TypeScript compiles an enum into a real object, which ends up in your bundle:
 
 ```js
-// this is how enums look in JavaScript
 var Status;
 (function (Status) {
   Status["Active"] = "active";
@@ -53,7 +54,7 @@ var Status;
 })(Status || (Status = {}));
 ```
 
-- It breaks [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself), for small enums it's negligible, but verbose ones can get truly ugly:
+- **Repetition** – string enums break [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) (don't repeat yourself). Small enums get away with it, but long names get ugly fast:
 
 ```ts
 FOREIGN_LINKED_BANK_ACCOUNT_PROFILE = "FOREIGN_LINKED_BANK_ACCOUNT_PROFILE";
@@ -63,15 +64,13 @@ TWO_FACTOR_AUTHENTICATION_BYPASS_ATTEMPT =
   "TWO_FACTOR_AUTHENTICATION_BYPASS_ATTEMPT";
 ```
 
-- It reduces readability by making simple comparisons longer than it should:
+- **Noisy comparisons** – a simple check turns into a wall of text:
 
 ```ts
 if (type === InternalWebhookTypes.FOREIGN_LINKED_BANK_ACCOUNT_PROFILE)
 ```
 
-Alternatives?
-
-## The Alternative: String Literal Union Types
+## Use string literal union types instead
 
 ```ts
 type Status = "active" | "disabled";
@@ -81,38 +80,45 @@ if (status !== "active") {
 }
 ```
 
-Clear and readable, with no JavaScript overhead. The `Status` type does not exist in the JavaScript value space, so we don't have to import anything. It does type-checking magic silently in the background. In most cases, this is exactly what we want: clean, quiet, and elegant.
+The typo check stays, and the overhead goes away. Types don't exist at runtime, so there's nothing to import and nothing added to your bundle. In most cases, this is all you need.
 
-Sometimes, however, you may want access to these values at runtime. For example, if you want to render all options in a UI.
+## Use `as const` when you need values at runtime
 
-```ts
-Object.values(Status).map(d => <option value={d}>{d}</option>)
+Sometimes you need the list of values at runtime, for example to render every option in a dropdown:
+
+```tsx
+Object.values(Status).map((s) => <option value={s}>{s}</option>);
 ```
 
-This is not possible because `Status` does not exist at runtime. Back to enums? Actually, there is a third pattern we can use instead. It combines the simplicity of literal types with runtime availability. The type is derived from the value automatically, so they can never drift apart:
+This fails, because the `Status` type doesn't exist at runtime. You don't need to go back to enums, though. Define the values as an `as const` array and derive the type from it, so the two can never drift apart:
 
-```ts
-export const Status = ["active", "disabled"] as const;
-export type StatusType = (typeof Status)[number];
+```tsx
+export const STATUSES = ["active", "disabled"] as const;
+export type Status = (typeof STATUSES)[number]; // "active" | "disabled"
 
 interface User {
-  status: StatusType;
+  status: Status;
 }
 
-// still works!
+// still type-checked
 if (status !== "active") {
   await sendActivationEmail();
 }
+
+// and available at runtime
+STATUSES.map((s) => <option value={s}>{s}</option>);
 ```
 
-## Rule of thumb
+## Which one to pick
 
-- **Literal type** → you only need type checking, no runtime iteration. The most common case.
-- **`as const` array/object** → you need runtime access to all values (validation, UI lists, etc.).
-- **Enum** → mostly when working with external code that already uses them. Generally avoid otherwise.
+| Pattern                    | Use it when                                                       |
+| -------------------------- | ----------------------------------------------------------------- |
+| Literal union type         | You only need type checking. This is the most common case.        |
+| `as const` array or object | You need the values at runtime, e.g., for validation or UI lists. |
+| Enum                       | External code you depend on already uses them. Avoid otherwise.   |
 
-## TL;DR: Enums vs Union Types
+## TL;DR
 
-Enums aren't inherently bad, but replacing them with literal types or the `as const` array/object pattern provides the same benefits with smaller overhead.
+Enums aren't inherently bad, but literal union types and `as const` arrays give you the same type safety with less code and no runtime cost.
 
-More JS/TS tips: [UUID v4 vs v7 vs Nano ID](/posts/which-uuid-is-better/).
+More JS/TS tips: [UUID v4 vs. v7 vs. Nano ID](/posts/which-uuid-is-better/).
