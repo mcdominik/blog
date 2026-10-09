@@ -10,6 +10,7 @@ import { getBlogPosts } from "src/utils";
 import BlueskyLikes from "$components/bluesky/BlueskyLikes.astro";
 import Tag from "$components/Tag.astro";
 import { SHOW_IMAGES } from "../../config.ts";
+import matchYouTubeURL from "../../embeds/youtube/matcher";
 
 export async function getStaticPaths() {
   const posts = await getBlogPosts(true);
@@ -23,6 +24,15 @@ type Props = CollectionEntry<"blog">;
 const post = Astro.props;
 const { Content } = await render(post);
 
+// Use the first embedded video, excluding inline references and footnotes.
+const videoURL = post.body?.match(
+  /^\s*(https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)\/\S+)\s*$/m,
+)?.[1];
+const videoID = videoURL ? matchYouTubeURL(videoURL) : undefined;
+const ogImage = videoID && !post.data.customOGImage
+  ? `https://i.ytimg.com/vi/${videoID}/maxresdefault.jpg`
+  : post.id + ".png";
+
 const images = import.meta.glob<{ default: ImageMetadata }>(
   "/src/assets/**/*.{jpeg,jpg,png,gif}"
 );
@@ -33,7 +43,7 @@ if (replacedHero && !images[replacedHero])
   );
 ---
 
-<BaseLayout {...post.data} image={post.id + ".png"} type="article" pubDate={post.data.pubDate} updatedDate={post.data.updatedDate}>
+<BaseLayout {...post.data} image={ogImage} type="article" pubDate={post.data.pubDate} updatedDate={post.data.updatedDate}>
   <Header active="blog" />
 
   <main class="max-w-2xl lg:max-w-3xl mx-auto my-0 h-full p-4">
