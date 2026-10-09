@@ -43,6 +43,7 @@ const href = `https://youtube.com/watch?v=${videoid}`;
   {title}
   data-title={title}
   {...attrs}
+  js-api
   style={`background-image: url('${posterURL}');`}
 >
   <a {href} class="lty-playbtn">
@@ -50,7 +51,24 @@ const href = `https://youtube.com/watch?v=${videoid}`;
   </a>
 </lite-youtube>
 
-<script src="lite-youtube-embed"></script>
+<div class="not-prose mt-2 flex justify-end">
+  <a
+    {href}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="inline-flex items-center gap-1 text-sm text-base-500 underline-offset-4 transition-colors hover:text-accent-600 hover:underline dark:text-base-400 dark:hover:text-accent-400"
+  >
+    Watch on YouTube <span aria-hidden="true">↗</span>
+    <span class="sr-only">(opens in a new tab)</span>
+  </a>
+</div>
+
+<script>
+  import "lite-youtube-embed";
+  import { trackYouTubeVideos } from "./analytics";
+
+  trackYouTubeVideos();
+</script>
 
 <style is:global>
   lite-youtube > iframe {
