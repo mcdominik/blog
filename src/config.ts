@@ -13,21 +13,20 @@ export const BASE = "";
 // MORE SETTINGS:
 
 // will be used for the the title and meta tags and in the header (if SITE_NAME is left blank)
-export const SITE_TITLE =
-  "Tech Blog | Code, Software Development & Electronics";
+export const SITE_TITLE = "Tech Blog | Software and Electronics";
 
 // will be used in the meta tags (and for example shown in search results)
 export const SITE_DESCRIPTION =
   "A tech blog for developers and makers: programming tutorials, electronics projects, software development tips, and practical code examples. Code, microcontrollers, and web development.";
 
-export const ABOUT_TITLE = "About me";
+export const ABOUT_TITLE = "About | Dominik Builds";
 export const ABOUT_DESCRIPTION =
-  "I'm a software engineer and open-source enthusiast. I believe that sharing knowledge is one of the best ways to grow—both as an individual and as a community.";
+  "Blog and YouTube channel about programming, electronics, and practical projects for developers and makers.";
 
 // will be used as the icon in the header and the favicon
 export const SITE_FAVICON = "";
 
-// will be used in the footer as the name of the author (c) <YEAR> <NAME> - LICENSE
+// identifies the person who writes the articles in author structured data
 export const NAME = "Dominik Mackiewicz";
 
 // will be used in the footer as the license of the content (e.g. "All right reserved" or "CC-BY-SA 4.0")
@@ -61,9 +60,11 @@ export const SOCIAL_LINKS: {
   YOUTUBE_URL: "https://www.youtube.com/@DominikBuilds",
   GITHUB_URL: "https://github.com/mcdominik",
   EMAIL: "mojspecjalnyemail@gmail.com",
+  INSTAGRAM_URL: "https://www.instagram.com/dominik.builds/",
+  LINKEDIN_URL: "https://www.linkedin.com/in/dom-mac/",
 };
 
-// EVEN MORE SETTINGS:
+// MORE SETTINGS:
 
 // if true, will show theme toggle in header (otherwise theme is automatically detected and can't be changed by the readers)
 export const MANUAL_DARK_MODE = true;

@@ -1,5 +1,5 @@
 ---
-import { BASE, SITE, SITE_TITLE, SITE_NAME, NAME } from "../config.ts";
+import { BASE, SITE, SITE_TITLE, SITE_NAME, NAME, SOCIAL_LINKS } from "../config.ts";
 import favicon16 from "../assets/favicon/favicon-16x16.png";
 import favicon32 from "../assets/favicon/favicon-32x32.png";
 import appleTouchIcon from "../assets/favicon/apple-touch-icon.png";
@@ -10,7 +10,7 @@ interface Props {
   image?: string;
   pubDate?: Date;
   updatedDate?: Date;
-  type?: "article" | "website";
+  type?: "article" | "website" | "profile";
   noindex?: boolean;
 }
 
@@ -30,7 +30,20 @@ const ogType = type === "article" ? "article" : "website";
 const siteName = SITE_NAME || SITE_TITLE;
 const authorName = NAME || "Dominik Mackiewicz";
 const baseSite = Astro.site ?? Astro.url;
-const ogImageURL = new URL(BASE + "/open-graph/" + image, baseSite);
+const ogImageURL = new URL(
+  /^https?:\/\//.test(image) ? image : BASE + "/open-graph/" + image,
+  baseSite,
+);
+const authorURL = new URL(BASE + "/about/", baseSite).href;
+const author = {
+  "@type": "Person",
+  "@id": authorURL + "#author",
+  name: authorName,
+  url: authorURL,
+  sameAs: Object.entries(SOCIAL_LINKS).flatMap(([key, value]) =>
+    key.endsWith("_URL") && typeof value === "string" && value ? [value] : [],
+  ),
+};
 
 // Build JSON-LD structured data
 const jsonLd =
@@ -48,11 +61,7 @@ const jsonLd =
           : pubDate
             ? { dateModified: pubDate.toISOString() }
             : {}),
-        author: {
-          "@type": "Person",
-          name: authorName,
-          url: SITE,
-        },
+        author,
         mainEntityOfPage: {
           "@type": "WebPage",
           "@id": canonicalURL.href,
@@ -63,7 +72,17 @@ const jsonLd =
           url: SITE,
         },
       }
-    : {
+    : type === "profile"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "@id": canonicalURL.href,
+          url: canonicalURL.href,
+          name: title,
+          description,
+          mainEntity: author,
+        }
+      : {
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: siteName,
@@ -94,7 +113,7 @@ const jsonLd =
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalURL} />
-<meta property="og:site_name" content={SITE_TITLE} />
+<meta property="og:site_name" content={siteName} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogImageURL} />

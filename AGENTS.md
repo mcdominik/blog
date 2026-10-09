@@ -1,4 +1,9 @@
+## OVERVIEW
+
+This is my personal website/blog. Main purpose is to maintain there high quality blog posts.Always follow best SEO/GEO/AEO rules, to keep strong webiste positioning.
+
 ## Writing Rules
+
 - Replace em dashes (-) with semicolons, commas, or sentence breaks.
 - Avoid starting responses with "Great question!", "You're right!", or "Let me help you."
 - Don't use phrases like "Let's dive into..."
