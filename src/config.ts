@@ -60,9 +60,11 @@ export const SOCIAL_LINKS: {
   YOUTUBE_URL: "https://www.youtube.com/@DominikBuilds",
   GITHUB_URL: "https://github.com/mcdominik",
   EMAIL: "mojspecjalnyemail@gmail.com",
+  INSTAGRAM_URL: "https://www.instagram.com/dominik.builds/",
+  LINKEDIN_URL: "https://www.linkedin.com/in/dom-mac/",
 };
 
-// EVEN MORE SETTINGS:
+// MORE SETTINGS:
 
 // if true, will show theme toggle in header (otherwise theme is automatically detected and can't be changed by the readers)
 export const MANUAL_DARK_MODE = true;
