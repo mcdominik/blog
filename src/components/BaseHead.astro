@@ -36,7 +36,6 @@ const author = {
   "@type": "Person",
   "@id": authorURL + "#author",
   name: authorName,
-  alternateName: "mcdominik",
   url: authorURL,
   sameAs: [SOCIAL_LINKS.GITHUB_URL, SOCIAL_LINKS.YOUTUBE_URL].filter(Boolean),
 };
@@ -109,7 +108,7 @@ const jsonLd =
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalURL} />
-<meta property="og:site_name" content={SITE_TITLE} />
+<meta property="og:site_name" content={siteName} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogImageURL} />

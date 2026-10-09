@@ -13,21 +13,20 @@ export const BASE = "";
 // MORE SETTINGS:
 
 // will be used for the the title and meta tags and in the header (if SITE_NAME is left blank)
-export const SITE_TITLE =
-  "Tech Blog | Code, Software Development & Electronics";
+export const SITE_TITLE = "Tech Blog | Programming and Electronics";
 
 // will be used in the meta tags (and for example shown in search results)
 export const SITE_DESCRIPTION =
   "A tech blog for developers and makers: programming tutorials, electronics projects, software development tips, and practical code examples. Code, microcontrollers, and web development.";
 
-export const ABOUT_TITLE = "About Dominik Mackiewicz | Dominik Builds";
+export const ABOUT_TITLE = "About | Dominik Builds";
 export const ABOUT_DESCRIPTION =
-  "Meet Dominik Mackiewicz, the software engineer behind Dominik Builds: programming articles, Arduino tutorials, and open-source projects on GitHub as mcdominik.";
+  "Dominik Builds, a blog and YouTube channel about programming, electronics, and practical projects for developers and makers.";
 
 // will be used as the icon in the header and the favicon
 export const SITE_FAVICON = "";
 
-// will be used in the footer as the name of the author (c) <YEAR> <NAME> - LICENSE
+// identifies the person who writes the articles in author structured data
 export const NAME = "Dominik Mackiewicz";
 
 // will be used in the footer as the license of the content (e.g. "All right reserved" or "CC-BY-SA 4.0")
