@@ -20,9 +20,9 @@ export const SITE_TITLE =
 export const SITE_DESCRIPTION =
   "A tech blog for developers and makers: programming tutorials, electronics projects, software development tips, and practical code examples. Code, microcontrollers, and web development.";
 
-export const ABOUT_TITLE = "About me";
+export const ABOUT_TITLE = "About Dominik Mackiewicz | Dominik Builds";
 export const ABOUT_DESCRIPTION =
-  "I'm a software engineer and open-source enthusiast. I believe that sharing knowledge is one of the best ways to grow—both as an individual and as a community.";
+  "Meet Dominik Mackiewicz, the software engineer behind Dominik Builds: programming articles, Arduino tutorials, and open-source projects on GitHub as mcdominik.";
 
 // will be used as the icon in the header and the favicon
 export const SITE_FAVICON = "";

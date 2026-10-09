@@ -2,9 +2,12 @@
 title: "TypeScript enums vs. union types vs. as const: Stop using enums"
 description: "Why TypeScript enums cause problems, and how string literal unions and as const arrays give you the same type safety with zero runtime cost."
 pubDate: "Feb 21 2026"
+updatedDate: "Oct 09 2026"
 published: true
 tags: ["tips", "TypeScript"]
 ---
+
+Use a **string literal union** when you only need type checking. Use an **`as const` array or object** when you also need values at runtime. Keep an **enum** when an existing API or codebase relies on it. For most new string-valued application types, a union is the simplest starting point.
 
 ## Why enums exist
 

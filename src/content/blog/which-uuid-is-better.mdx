@@ -2,27 +2,30 @@
 title: "UUID v4 vs. v7 vs. Nano ID: Which should you use?"
 description: "Compare UUID v4, UUID v7, and Nano ID: database index performance, collision probability, and when to use each in your applications."
 pubDate: "Feb 25 2026"
+updatedDate: "Oct 09 2026"
 published: true
 tags: ["tips", "JavaScript"]
 ---
 
-> **Warning:** Choosing the wrong identifier format can degrade database performance at scale.
+For new database keys, consider **UUID v7** when time ordering and index locality matter. Choose **UUID v4** for simple random IDs with native `crypto.randomUUID()` support, or **Nano ID** for shorter URL-friendly strings. Benchmark your database workload before switching an existing schema; no format is the best choice for every application.
 
 ## What is a UUID?
 
 A [Universally Unique Identifier (UUID)](https://en.wikipedia.org/wiki/Universally_unique_identifier) is a 128-bit value designed to uniquely identify resources across distributed systems without requiring a central coordinating authority.
 
-While the RFC 9562 standard defines eight versions, UUID v4 and UUID v7 are the two primary choices for modern application development.
+[RFC 9562](https://www.rfc-editor.org/rfc/rfc9562.html) documents the UUID formats. This comparison focuses on UUID v4 and UUID v7, two useful choices for application identifiers.
 
 ### UUID v4: Random identifiers
 
-UUID v4 is the most widely adopted version. It consists of 122 pseudo-random bits, offering virtually zero chance of collision across distributed nodes.
+[UUID v4](https://www.rfc-editor.org/rfc/rfc9562.html#section-5.4) has 122 random bits; the other six bits identify the version and variant. With a secure generator, collisions are extremely unlikely at typical application volumes, but uniqueness is still probabilistic.
 
 ![UUID v4 Structure](../../assets/posts/uuid/uuid-v4-structure.svg)
 
 ### UUID v7: Time-ordered identifiers
 
-UUID v7 combines a 48-bit Unix timestamp (in milliseconds) with 74 bits of randomness. Because the most significant bits represent time, UUID v7 values sort chronologically. This time-ordered layout makes it ideal for database primary keys and clustered indexes.
+[UUID v7](https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7) starts with a 48-bit Unix timestamp in milliseconds. Its remaining 74 payload bits can hold random data, or a combination of randomness, sub-millisecond time, and counters.
+
+Values with different timestamps sort by that timestamp. Within the same millisecond, generation order depends on the implementation: random suffixes alone do not guarantee it. Clock rollback and clocks on different machines also matter. The RFC describes [optional monotonicity mechanisms](https://www.rfc-editor.org/rfc/rfc9562.html#section-6.2), so do not treat a UUID as a guaranteed global event sequence.
 
 ![UUID v7 Structure](../../assets/posts/uuid/uuid-v7-structure.svg)
 
@@ -38,27 +41,29 @@ Modern runtimes and libraries – such as the Node.js [crypto module](https://no
 
 ## Collision probability: Can two UUIDs collide?
 
-| Metric | UUID v4 | UUID v7 |
+| Metric | UUID v4 | UUID v7 with a fully random suffix |
 | :--- | :--- | :--- |
 | Random bits | 122 | 74 |
-| Collision window | Entire identifier space | Per millisecond |
-| Practical risk | Negligible | Negligible |
+| Collision window | All generated IDs | IDs with the same millisecond timestamp |
+| Uniqueness | Probabilistic | Probabilistic |
 
-To put 128-bit identifiers into perspective: if you generate one million IDs every second for the next 100 years, the probability of a single collision remains around 0.0001%.
+For independent, uniformly random values in a space of size `2^b`, the birthday approximation is `p ≈ 1 − exp(−n(n−1)/(2 × 2^b))`. For UUID v4, generating one million IDs every second for 100 years gives approximately `n = 3.16 × 10^15` and a collision probability of about **0.000094%** with `b = 122`.
 
-UUID v7 trades 48 bits of randomness for a timestamp, but its 74 remaining random bits apply to a single 1-millisecond window. You would need to generate hundreds of billions of IDs within the same millisecond on a single machine to risk a duplicate – a scenario that physical hardware constraints make virtually impossible in real-world systems.
+For UUID v7 with 74 random bits, apply the same calculation to IDs sharing a timestamp. For example, one million IDs in a single millisecond gives a probability of about **2.6 × 10^-11** for that bucket. Risk accumulates across buckets, and generators that use counters or extra timestamp bits need analysis of their actual construction. The RFC discusses these assumptions in its [collision resistance guidance](https://www.rfc-editor.org/rfc/rfc9562.html#section-6.7).
+
+Keep a unique constraint on database identifiers and handle a duplicate if one occurs. Low collision probability does not replace data integrity checks.
 
 ---
 
 ## Database index performance: UUID v4 vs. UUID v7
 
-For relational database primary keys, UUID v7 is the superior choice.
+UUID v7 is worth considering for write-heavy tables with B-tree indexes. The RFC identifies [poor index locality](https://www.rfc-editor.org/rfc/rfc9562.html#section-2.1) as a drawback of UUID v4: random values spread inserts across the index instead of grouping recent values together.
 
-Relational databases like PostgreSQL store primary keys in a [B-tree index](https://en.wikipedia.org/wiki/B-tree). Because UUID v4 values are entirely random, each new insert lands at an unpredictable location in the index tree. As tables grow, this randomness forces the database engine to constantly swap pages in memory, leading to severe index fragmentation and elevated disk I/O.
+UUID v7's timestamp prefix can improve locality by keeping recently generated values close in the index. That can reduce the working set of index pages during inserts. It does **not** eliminate page splits or fragmentation, guarantee higher throughput, or make the table itself physically ordered. PostgreSQL, for example, stores table rows separately from its indexes.
 
-Because UUID v7 values are sequential, new inserts append to the end of the B-tree leaf pages. This preserves memory cache locality and keeps write throughput predictable even as tables grow past millions of records.
+There is no universal row-count threshold where UUID v7 becomes faster. The result depends on index size relative to memory, insert concurrency, database engine, and read/write patterns. Compare insert latency, throughput, index size, and reads using representative data before migrating.
 
-If your dataset contains fewer than 10 million rows, this performance gap is often unnoticeable. In that case, UUID v4 remains attractive because modern JavaScript runtimes support it natively with `crypto.randomUUID()`, requiring no third-party dependencies.
+UUID v4 remains a practical choice when random IDs meet your needs, especially when you want the native JavaScript `crypto.randomUUID()` API. In PostgreSQL, both versions use the same [native UUID type](https://www.postgresql.org/docs/current/datatype-uuid.html).
 
 ---
 
@@ -72,9 +77,9 @@ If you work in the JavaScript ecosystem, you have likely encountered [Nano ID](h
 | Alphabet | Hexadecimal (`0-9`, `a-f`) | URL-safe (`A-Z`, `a-z`, `0-9`, `_`, `-`) |
 | Standard | RFC 9562 | Library-specific |
 
-Nano ID is smaller and faster for public URLs. Because it uses a 64-character URL-friendly alphabet instead of 16 hexadecimal characters, it provides collision resistance comparable to UUID v4 in 21 characters instead of 36. This compact footprint makes it ideal for public URLs, shareable links, and short codes.
+Nano ID produces a shorter string for public URLs. Because it uses a 64-character URL-friendly alphabet instead of 16 hexadecimal characters, it provides collision resistance comparable to UUID v4 in 21 characters instead of 36. This compact footprint makes it ideal for public URLs, shareable links, and short codes.
 
-However, relational databases like PostgreSQL provide a native 128-bit `UUID` data type stored efficiently as 16 binary bytes. In contrast, storing a Nano ID requires a `VARCHAR(21)` or `CHAR(21)` column, which consumes more disk space and indexes less efficiently than a native binary UUID.
+However, relational databases like PostgreSQL provide a native 128-bit `UUID` data type stored efficiently as 16 binary bytes. In contrast, storing a Nano ID requires a `VARCHAR(21)` or `CHAR(21)` column, which stores the identifier as text rather than 16 binary bytes. The total storage cost and index performance depend on the database and schema.
 
 > **Rule of thumb:** Use Nano ID for user-facing URLs and slug parameters. Use UUID for internal primary keys.
 
@@ -82,10 +87,10 @@ However, relational databases like PostgreSQL provide a native 128-bit `UUID` da
 
 ## Summary: Which identifier should you choose?
 
-- **UUID v7** – Choose for database primary keys and clustered indexes. Time ordering prevents B-tree fragmentation and maintains consistent insert throughput at scale.
+- **UUID v7** – Consider for database primary keys when time ordering and B-tree index locality matter. Measure the benefit for your workload.
 
 - **UUID v4** – Choose for internal identifiers in zero-dependency environments. It is built into the native JavaScript `crypto.randomUUID()` API and requires no third-party packages.
 
-- **Nano ID** – Choose for public-facing URLs, invite tokens, and short codes where readable, compact strings improve the user experience.
+- **Nano ID** – Choose for public-facing URLs and shareable IDs where compact strings are useful. Security-sensitive tokens also need sufficient entropy, expiry, and access controls.
 
 Designing a database schema? Read my guide on [how to store money in a database](/posts/store-monetary-values/).

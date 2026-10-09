@@ -9,7 +9,7 @@ import FormattedDate from "$components/FormattedDate.astro";
 import { getBlogPosts } from "src/utils";
 import BlueskyLikes from "$components/bluesky/BlueskyLikes.astro";
 import Tag from "$components/Tag.astro";
-import { SHOW_IMAGES } from "../../config.ts";
+import { BASE, NAME, SITE_NAME, SHOW_IMAGES } from "../../config.ts";
 
 export async function getStaticPaths() {
   const posts = await getBlogPosts(true);
@@ -59,6 +59,13 @@ if (replacedHero && !images[replacedHero])
       </div>
 
       <h1 class="mt-4">{post.data.title}</h1>
+      <p class="not-prose mb-6 text-sm text-base-600 dark:text-base-400">
+        By <a href={BASE + "/about/"} rel="author" class="underline underline-offset-4">{NAME}</a>
+        <span> · {SITE_NAME}</span>
+        {post.data.updatedDate && (
+          <span> · Updated <FormattedDate date={post.data.updatedDate} /></span>
+        )}
+      </p>
       <Content />
 
       <script is:inline define:vars={{ postTitle: post.data.title, postSlug: post.id, postTags: post.data.tags ?? [] }}>
