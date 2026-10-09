@@ -3,7 +3,7 @@ import type { AccentColor, BaseColor } from "./colors";
 // IMPORTANT SET THOSE TWO VARIABLES:
 // NUMBER ONE:
 // if deployed to github pages, set to https://<your-github-username>.github.io/
-export const SITE = "https://dominiklabs.com";
+export const SITE = "https://www.dominikbuilds.com";
 
 // NUMBER TWO:
 // if repo name is <your-github-username>.github.io set to '/'
