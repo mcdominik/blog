@@ -13,11 +13,11 @@ export const BASE = "";
 // MORE SETTINGS:
 
 // will be used for the the title and meta tags and in the header (if SITE_NAME is left blank)
-export const SITE_TITLE = "Tech Blog | Software and Electronics";
+export const SITE_TITLE = "Tech Blog | Software and Robotics";
 
 // will be used in the meta tags (and for example shown in search results)
 export const SITE_DESCRIPTION =
-  "A tech blog for developers and makers: programming tutorials, electronics projects, software development tips, and practical code examples. Code, microcontrollers, and web development.";
+  "A tech blog about programming, electronics, and robotics, with practical tutorials and hands-on projects.";
 
 export const ABOUT_TITLE = "About | Dominik Builds";
 export const ABOUT_DESCRIPTION =
