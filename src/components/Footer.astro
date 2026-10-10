@@ -233,8 +233,8 @@ const today = new Date();
     <p
       class="mt-8 text-center text-sm/6 text-base-600 dark:text-base-400 md:order-1 md:mt-0 text-pretty"
     >
-      &copy; {today.getFullYear()}
-      {LICENSE}
+      <span class="block">&copy; {today.getFullYear()} {NAME}.</span>
+      <span class="block">{LICENSE}</span>
       {
         SOURCE_LINK ? (
           <a
@@ -242,7 +242,7 @@ const today = new Date();
             target="_blank"
             class="text-accent-600 hover:text-accent-500 dark:text-accent-500 dark:hover:text-accent-400 font-medium"
           >
-            Source
+            Website code: MIT. View source.
           </a>
         ) : null
       }

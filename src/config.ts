@@ -29,8 +29,8 @@ export const SITE_FAVICON = "";
 // identifies the person who writes the articles in author structured data
 export const NAME = "Dominik Mackiewicz";
 
-// will be used in the footer as the license of the content (e.g. "All right reserved" or "CC-BY-SA 4.0")
-export const LICENSE = "MIT licensed.";
+// Content rights shown in the footer; the website code is licensed separately under MIT.
+export const LICENSE = "Articles and original images: All rights reserved.";
 
 // will be used to identify your bluesky account, so that likes and comments can be shown on your posts
 export const BLUESKY_IDENTIFIER = "dominiklabs.com";
