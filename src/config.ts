@@ -30,7 +30,7 @@ export const SITE_FAVICON = "";
 export const NAME = "Dominik Mackiewicz";
 
 // Content rights shown in the footer; the website code is licensed separately under MIT.
-export const LICENSE = "Articles and original images: All rights reserved.";
+export const LICENSE = "Content rights reserved.";
 
 // will be used to identify your bluesky account, so that likes and comments can be shown on your posts
 export const BLUESKY_IDENTIFIER = "dominiklabs.com";

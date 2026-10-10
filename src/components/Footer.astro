@@ -231,10 +231,10 @@ const today = new Date();
       }
     </div>
     <p
-      class="mt-8 text-center text-sm/6 text-base-600 dark:text-base-400 md:order-1 md:mt-0 text-pretty"
+      class="mt-8 text-center text-[10px]/6 sm:text-xs/6 whitespace-nowrap text-base-600 dark:text-base-400 md:order-1 md:mt-0"
     >
-      <span class="block">&copy; {today.getFullYear()} {NAME}.</span>
-      <span class="block">{LICENSE}</span>
+      <span>&copy; {today.getFullYear()} {NAME}.</span>{" "}
+      <span>{LICENSE}</span>{" "}
       {
         SOURCE_LINK ? (
           <a
@@ -242,7 +242,7 @@ const today = new Date();
             target="_blank"
             class="text-accent-600 hover:text-accent-500 dark:text-accent-500 dark:hover:text-accent-400 font-medium"
           >
-            Website code: MIT. View source.
+            Code: MIT.
           </a>
         ) : null
       }
