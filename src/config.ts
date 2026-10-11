@@ -32,9 +32,6 @@ export const NAME = "Dominik Mackiewicz";
 // Content rights shown in the footer; the website code is licensed separately under MIT.
 export const LICENSE = "Content rights reserved.";
 
-// will be used to identify your bluesky account, so that likes and comments can be shown on your posts
-export const BLUESKY_IDENTIFIER = "dominiklabs.com";
-
 export const SOURCE_LINK = "https://github.com/mcdominik/blog";
 
 // will be used to set the base color of the blog
@@ -53,7 +50,6 @@ export const SOCIAL_LINKS: {
   YOUTUBE_URL?: string;
   SUBSTACK_URL?: string;
   EMAIL?: string;
-  BLUESKY_URL?: string;
   SHOW_RSS?: boolean;
 } = {
   SHOW_RSS: true,
