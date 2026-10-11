@@ -40,6 +40,7 @@ export default defineConfig({
     },
     plugins: [pagefind({ outputDirectory: "dist" })],
     build: {
+      sourcemap: true,
       rollupOptions: {
         external: [BASE + "/pagefind/pagefind.js"],
       },
