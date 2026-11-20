@@ -6,11 +6,11 @@ const { index, active, tag } = Astro.props;
 const href =
   index === 1
     ? tag
-      ? BASE + "/tags/" + tag
+      ? BASE + "/tags/" + tag + "/"
       : BASE + "/"
     : tag
-      ? BASE + "/tags/" + tag + "/" + index
-      : BASE + "/pages/" + index;
+      ? BASE + "/tags/" + tag + "/" + index + "/"
+      : BASE + "/pages/" + index + "/";
 ---
 
 <a

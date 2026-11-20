@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import { resolve } from "path";
+import { readdirSync, readFileSync } from "fs";
 import remarkMath from "remark-math";
 import rehypeMathjax from "rehype-mathjax";
 
@@ -22,6 +23,19 @@ import {
 import LinkCardEmbed from "./src/embeds/link-card/embed";
 import YoutubeEmbed from "./src/embeds/youtube/embed";
 import ExcalidrawEmbed from "./src/embeds/excalidraw/embed";
+
+// Post URL -> updatedDate (or pubDate) from frontmatter, for sitemap <lastmod>.
+const BLOG_DIR = "./src/content/blog";
+const postDates = new Map(
+  readdirSync(BLOG_DIR).map((file) => {
+    const frontmatter =
+      readFileSync(`${BLOG_DIR}/${file}`, "utf8").split("---")[1] ?? "";
+    const date = (key: string) =>
+      frontmatter.match(new RegExp(`^${key}:\\s*"?([^"\\n]+)`, "m"))?.[1];
+    const url = `${SITE}${BASE}/posts/${file.replace(/\.mdx?$/, "")}/`;
+    return [url, date("updatedDate") ?? date("pubDate")];
+  }),
+);
 
 // https://astro.build/config
 export default defineConfig({
@@ -53,8 +67,12 @@ export default defineConfig({
     }),
     mdx(),
     sitemap({
-      filter: (page) =>
-        !page.includes("/pages/") && !page.includes("/tags/"),
+      filter: (page) => !page.includes("/pages/") && !page.includes("/tags/"),
+      serialize: (item) => {
+        const date = postDates.get(item.url);
+        if (date) item.lastmod = new Date(date).toISOString();
+        return item;
+      },
     }),
     tailwind(),
     svelte(),
@@ -87,5 +105,6 @@ export default defineConfig({
   },
   site: SITE,
   base: BASE,
+  trailingSlash: "always",
   output: "static",
 });
