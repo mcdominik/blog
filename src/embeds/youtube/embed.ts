@@ -6,7 +6,7 @@ const YoutubeEmbed: EmbedsOption = {
   urlArgument: "id",
   urlMatcher: YoutubeMatcher,
   directiveName: "youtube",
-  importPath: "src/embeds",
+  importPath: "./src/embeds",
 };
 
 export default YoutubeEmbed;

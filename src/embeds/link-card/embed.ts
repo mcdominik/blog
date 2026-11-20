@@ -5,7 +5,7 @@ const LinkCardEmbed: EmbedsOption = {
   componentName: "LinkCard",
   urlMatcher: LinkMatcher,
   directiveName: "link",
-  importPath: "src/embeds",
+  importPath: "./src/embeds",
 };
 
 export default LinkCardEmbed;

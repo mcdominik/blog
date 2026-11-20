@@ -6,7 +6,7 @@ const ExcalidrawEmbed: EmbedsOption = {
   urlArgument: "src",
   urlMatcher: ExcalidrawMatcher,
   directiveName: "excalidraw",
-  importPath: "src/embeds",
+  importPath: "./src/embeds",
 };
 
 export default ExcalidrawEmbed;

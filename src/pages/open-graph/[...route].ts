@@ -5,7 +5,7 @@ import {
   SITE_DESCRIPTION,
   SITE_NAME,
 } from "../../config.ts";
-import { getBlogPosts } from "src/utils";
+import { getBlogPosts } from "../../utils";
 import colors from "tailwindcss/colors";
 
 const posts = await getBlogPosts();
