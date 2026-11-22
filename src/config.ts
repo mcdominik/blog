@@ -79,3 +79,9 @@ export const SITE_NAME = "Dominik Builds";
 
 // if true, will show the SITE_FAVICON in the header
 export const SHOW_FAVICON_IN_HEADER = true;
+
+// global affiliate banner shown at the top of every page
+export const HOSTINGER_PROMO = {
+  url: "https://hostinger.com/dominikbuilds",
+  code: "DOMINIKBUILDS",
+};
